@@ -40,24 +40,31 @@ y_test = y_array_reshape(y_test)
 
 
 training_data = zip(x_train, y_train)
+training_data2 = zip(x_train, y_train)
+training_data3 = zip(x_train, y_train)
+
+
 test_data = zip(x_test, y_test)
+test_data2 = zip(x_test, y_test)
+test_data3 = zip(x_test, y_test)
 
 
-NN = Network([31, 31, 2], hidden_activation=Sigmoid, output_activation=Softmax, cost=CrossEntropyCost)
+# NN = Network([31, 10, 2], hidden_activation=ReLu, output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier')
+# # print(NN.weights)
+# # exit()
 
-# print(NN.biases[0].shape)
-list_cost = []
 
-# cost_tuple = NN.train_(training_data, 100, 10, lambda_=0.01, test_data=test_data, n_epoch_early_stop=50)
-# list_cost.append(cost_tuple)
+# cost_tuple = NN.train_(training_data, 1000, 2, learning_rate=0.01, lambda_=0.01, test_data=test_data, n_epoch_early_stop=100)
+# draw_plot(cost_tuple)
 
-cost_tuple = NN.train_(training_data, 1000, 7, learning_rate=5, lambda_=0.5, test_data=test_data, n_epoch_early_stop=100)
-list_cost.append(cost_tuple)
-
-# cost_tuple = NN.train_(training_data, 100, 30, lambda_=0.01, test_data=test_data, n_epoch_early_stop=50)
-# list_cost.append(cost_tuple)
-
+NN = Network([31, 4, 3, 2], hidden_activation=ReLu, output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier')
+cost_tuple = NN.train_(training_data2, 1000, 50, learning_rate=0.05, lambda_=0.01, test_data=test_data2, n_epoch_early_stop=100)
 draw_plot(cost_tuple)
+
+# NN = Network([31, 4, 3, 2], hidden_activation=Tanh, output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier')
+# cost_tuple = NN.train_(training_data3, 1000, 32, learning_rate=0.03, lambda_=0.05, test_data=test_data3, n_epoch_early_stop=100)
+# draw_plot(cost_tuple)
+
 # print(x_train.shape)
 # print(NN.feedforward(x_train[0] ) )
 

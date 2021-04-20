@@ -6,3 +6,5 @@ http://neuralnetworksanddeeplearning.com/chap2.html
 
 https://towardsdatascience.com/derivative-of-the-sigmoid-function-536880cf918e
 
+https://machinelearningmastery.com/weight-initialization-for-deep-learning-neural-networks/
+
