@@ -6,7 +6,8 @@ from lib.visualization import draw_plot
 
 def array_normalization(arr):
 	for i in range(arr.shape[1]):
-		arr[:,i] = minmax_normalization(arr[:,i])
+		arr[:,i] = zscore_normalization(arr[:,i])
+		# arr[:,i] = minmax_normalization(arr[:,i])
 	return arr
 
 def x_array_reshape(arr):
@@ -57,13 +58,18 @@ test_data3 = zip(x_test, y_test)
 # cost_tuple = NN.train_(training_data, 1000, 2, learning_rate=0.01, lambda_=0.01, test_data=test_data, n_epoch_early_stop=100)
 # draw_plot(cost_tuple)
 
-NN = Network([31, 4, 3, 2], hidden_activation=ReLu, output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier')
-cost_tuple = NN.train_(training_data2, 1000, 50, learning_rate=0.05, lambda_=0.01, test_data=test_data2, n_epoch_early_stop=100)
-draw_plot(cost_tuple)
-
 # NN = Network([31, 4, 3, 2], hidden_activation=Tanh, output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier')
-# cost_tuple = NN.train_(training_data3, 1000, 32, learning_rate=0.03, lambda_=0.05, test_data=test_data3, n_epoch_early_stop=100)
+# cost_tuple = NN.train_(training_data2, 1000, 32, learning_rate=0.03, lambda_=0.01, test_data=test_data2, n_epoch_early_stop=100)
 # draw_plot(cost_tuple)
+
+# NN = Network("mini-batch | Tanh | Xavier | CE" ,[31, 4, 3, 2], hidden_activation=Tanh, output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier')
+# cost_tuple = NN.train_(zip(x_train, y_train), 1000, 10, learning_rate=1, lambda_=2, test_data=zip(x_test, y_test), n_epoch_early_stop=100)
+
+# NN2 = Network("Stochastic | Sigmoid | std | CE" ,[31, 4, 3, 2], hidden_activation=Sigmoid, output_activation=Softmax, cost=CrossEntropyCost, w_init='std')
+# cost_tuple = NN2.train_(zip(x_train, y_train), 1000, 1, learning_rate=2, lambda_=0.3, test_data=zip(x_test, y_test), n_epoch_early_stop=100)
+
+NN3 = Network("mini-batch | ReLU | he | CE" ,[31, 4, 3, 2], hidden_activation=ReLu, output_activation=Softmax, cost=CrossEntropyCost, w_init='he')
+cost_tuple = NN3.train_(zip(x_train, y_train), 1000, 30, learning_rate=1, lambda_=1, test_data=zip(x_test, y_test), n_epoch_early_stop=100)
 
 # print(x_train.shape)
 # print(NN.feedforward(x_train[0] ) )

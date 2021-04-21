@@ -1,7 +1,6 @@
 import numpy as np
 import random
-
-"IMPLEMENT VARIABLE LEARNING RATE"
+import matplotlib.pyplot as plt
 
 class Softmax:
 	@staticmethod
@@ -48,7 +47,9 @@ class ReLu:
 	
 	@staticmethod
 	def derivative(x):
-		return np.where(x < 0, 0.01, 1)
+		# return np.where(x < 0, -0.01, 1)
+		# return 1 * ReLu.fct(x)
+		return np.maximum(0.01, x)
 
 def sigmoid(x: np.ndarray) -> np.ndarray:
 	if x.size == 0:
@@ -92,7 +93,7 @@ class CrossEntropyCost(object):
 		returns nan.  The np.nan_to_num ensures that that is converted
 		to the correct value (0.0).
 		"""
-		return np.sum(np.nan_to_num(-y*np.log(a + 1e-15)-(1-y)*np.log(1-a + 1e-15))) / a.shape[0]
+		return np.sum(np.nan_to_num(-y*np.log(a + 1e-15)-(1-y)*np.log(1-a + 1e-15))) / (a.shape[0] * a.shape[1])
 
 	@staticmethod
 	def delta(z, a, y):
@@ -112,12 +113,16 @@ class Weight_init:
 
 	@staticmethod
 	def xavier(layers):
-		return [np.random.randn(x, y)/np.sqrt(y + x) * np.sqrt(6) for x,y in zip(layers[1:], layers[:-1])]
+		return [np.random.randn(x, y) / np.sqrt(y + x) for x,y in zip(layers[1:], layers[:-1])]
+
+	@staticmethod
+	def he(layers):
+		return [np.random.randn(x, y) * np.sqrt(2 /(y + x)) / 10 for x,y in zip(layers[1:], layers[:-1])]
 
 class Network(object):
-	def __init__(self, layers, cost=CrossEntropyCost, hidden_activation=Sigmoid, output_activation=Sigmoid, w_init='std'):
+	def __init__(self, name, layers, cost=CrossEntropyCost, hidden_activation=Sigmoid, output_activation=Sigmoid, w_init='std'):
 		''' 
-			Exemple of size: [2, 3, 1] 
+			Exemple of layers: [2, 3, 1] 
 			if we want to create a Network object with 
 				2 neurons in the first layer, 
 				3 neurons in the second layer, and 
@@ -131,21 +136,43 @@ class Network(object):
 			As the sigmoid graph show it, if z << 0 or z >> 1, a small change in the input
 			give a small change in the output, we say the neuron is 'saturated'
 		'''
+		self.name = name
 		self.layers = layers
 		self.nb_layers = len(layers)
 		if w_init == 'std':
 			self.weights = Weight_init.std(layers)
 		elif w_init == 'xavier':
 			self.weights = Weight_init.xavier(layers)
-		self.biases = [np.random.randn(x, 1) for x in layers[1:]]
+		elif w_init == 'he':
+			self.weights = Weight_init.he(layers)
+		self.biases = [np.random.randn(x, 1)/10 for x in layers[1:]]
 		self.cost = cost
-		self.list_training_cost = []
-		self.list_test_cost = []
+		self.list_train_cost = [[],[]]
+		self.list_test_cost = [[],[]]
 		self.output_a = output_activation
 		self.hidden_a = hidden_activation
 
-	# def quadratic_cost_derivative(self, output_activations, y):
-	# 	return np.subtract(output_activations, y)
+	def draw_plot(self):
+		train0 = list(zip(*self.list_train_cost[0]))
+		train1 = list(zip(*self.list_train_cost[1]))
+		
+		test0 = list(zip(*self.list_test_cost[0]))
+		test1 = list(zip(*self.list_test_cost[1]))
+		
+		# print(self.list_test_cost)
+		# exit()
+		# indice = [x for x,y in enumerate(training)]
+		plt.plot(test0[0], test0[1], label= self.name + ' Test Before Early-Stop')
+		plt.plot(train0[0], train0[1], label=self.name + ' Train Before Early-Stop')
+		plt.plot(test1[0], test1[1], label=self.name + ' Test After Early-Stop')
+		plt.plot(train1[0], train1[1], label=self.name + ' Train After Early-Stop')
+		# plt.plot(indice, test)
+		plt.xlabel("Epoch")
+		plt.ylabel("Cost")
+		title = "Start Cost : {}\n End Cost: {}".format(train0[1][0], train1[1][-1])
+		plt.title(title)
+		plt.legend()
+		plt.show()
 
 	def feedforward(self, a):
 		"""Return the output of the network if "a" is input.
@@ -176,7 +203,6 @@ class Network(object):
 		a = x
 		for weight, bias in zip(self.weights[:-1], self.biases[:-1]):
 			z = np.add(np.dot(weight, a), bias)
-			# a = sigmoid(z)
 			a = self.hidden_a.fct(z)
 			list_activation.append(a)
 			list_z.append(z)
@@ -190,13 +216,12 @@ class Network(object):
 		nabla_w[-1] = np.dot(delta, list_activation[-2].transpose())
 		for l in range(2, self.nb_layers):
 			z = list_z[-l]
-			# delta = np.dot(self.weights[-l + 1].transpose(), delta) * sigmoid_derivative(z)
 			delta = np.dot(self.weights[-l + 1].transpose(), delta) * self.hidden_a.derivative(z)
 			nabla_b[-l] = delta
 			nabla_w[-l] = np.dot(delta, list_activation[-l -1].transpose())
 		return (nabla_w, nabla_b)
 	
-	def train_(self, training_data, epochs, mini_batch_size, learning_rate = 5.0,\
+	def train_(self, training_data, epochs, mini_batch_size, learning_rate = 1.0,\
 			lambda_=0.0, test_data=None, n_epoch_early_stop = 0):
 		"""Train the neural network using mini-batch stochastic
 		gradient descent.  The "training_data" is a list of tuples
@@ -211,7 +236,8 @@ class Network(object):
 		best_accuracy = 1
 		no_change_best_accuracy = 0
 
-		best_cost = 1e20
+		best_cost = 1
+		biggest_cost = 1
 		no_change_best_cost = 0
 
 		training_data = list(training_data)
@@ -226,9 +252,29 @@ class Network(object):
 			if test_data:
 				accuracy = self.evaluate(test_data)
 				test_cost = self.get_cost(test_data)
-				training_cost = self.get_cost(training_data)
-				self.list_test_cost.append(test_cost)
-				self.list_training_cost.append(training_cost)
+				train_cost = self.get_cost(training_data)
+				self.list_test_cost[0].append(test_cost)
+				self.list_train_cost[0].append(train_cost)
+
+				if train_cost > 0.5:
+					learning_rate = 1
+				elif 0.07 < train_cost < 0.5:
+					learning_rate = 0.1
+				else:
+					learning_rate = 0.01 
+
+				# if train_cost < best_cost and train_cost < 0.7 * biggest_cost and learning_rate > 0.01:
+				# 	learning_rate /= 10
+				# 	# lambda_ /= 10
+				# 	biggest_cost = train_cost
+				# 	best_cost = train_cost
+				# 	if learning_rate < 0.01:
+				# 		learning_rate = 0.01
+				
+				
+				# if train_cost < 0.1:
+				# 	learning_rate = 0.01
+				# 	# lambda_ = 0.01
 
 				if test_cost < best_cost:
 					best_cost = test_cost
@@ -238,12 +284,17 @@ class Network(object):
 					if no_change_best_cost == 2:
 						best_cost = test_cost
 				
-				# if no_change_best_cost > 2 and learning_rate > 0.05:
-				# 	learning_rate /= 10
+				# if best_cost < 0.1:
+				# 	learning_rate = 0.01
+
+				# if no_change_best_cost > 1 and learning_rate >= 1:
+				# 	learning_rate /= 2
 				# 	no_change_best_cost = 0
+				# 	if learning_rate < 0.01:
+				# 		learning_rate = 0.01
 				
 				print("Epoch {}: {} / {} Training Cost: {}  Test Cost: {}  learning_rate: {}".format(
-					j, accuracy, test_size, training_cost, test_cost, learning_rate))
+					j, accuracy, test_size, train_cost, test_cost, learning_rate))
 				if n_epoch_early_stop > 0:
 					if best_accuracy < accuracy:
 						best_accuracy = accuracy
@@ -252,10 +303,24 @@ class Network(object):
 						no_change_best_accuracy += 1
 					if no_change_best_accuracy == n_epoch_early_stop:
 						print("Early stop activated")
-						return (self.list_training_cost, self.list_test_cost)
+						break
 			else:
 				print("Epoch {0} complete".format(j))
-		return (self.list_training_cost, self.list_test_cost)
+		if test_data:
+			tmp_test = list(enumerate(self.list_test_cost[0]))
+			tmp_train = list(enumerate(self.list_train_cost[0]))
+
+			#Separate the list cost to be able to draw plot before and after early-stop is activated"
+			if n_epoch_early_stop:
+				self.list_test_cost = [tmp_test[:-n_epoch_early_stop + 1], tmp_test[-n_epoch_early_stop:]]
+				self.list_train_cost = [tmp_train[:-n_epoch_early_stop + 1], tmp_train[-n_epoch_early_stop:]]
+			else:
+				self.list_test_cost[0] = tmp_test
+				self.list_train_cost[0] = tmp_train
+			# print(tmp_test)
+			# exit()
+			self.draw_plot()
+		return (self.list_train_cost, self.list_test_cost)
 
 	
 	def update_minibatch(self, batch, learning_rate, lambda_, n):
@@ -293,12 +358,11 @@ class Network(object):
 		network's output is assumed to be the index of whichever
 		neuron in the final layer has the highest activation."""
 
-		list_res = [(self.feedforward(x), [np.argmax(y)]) for (x,y) in test_data]
-		test_results = list(zip(*[(1 - x[0], y) if np.argmax(x) == 0 else (x[1], y)
-						for (x, y) in list_res]))
-		a = np.array(test_results[0])
-		y = np.array(test_results[1])
-		
+		tmp_res = [(self.feedforward(x), y) for (x,y) in test_data]
+		tuple_a_y = list(zip(*[(x, y)	for (x, y) in tmp_res]))
+		a = np.array(tuple_a_y[0])
+		y = np.array(tuple_a_y[1])
+
 		return self.cost.value(a , y)
 
 # nn = Network([3, 2, 1])

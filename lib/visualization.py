@@ -4,8 +4,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 def draw_plot(list_values):
-
-	# for list_values in list_cost:
 	training = list_values[0]
 	test = list_values[1]
 	indice = [x for x,y in enumerate(list_values[0])]
