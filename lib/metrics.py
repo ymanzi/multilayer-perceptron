@@ -1,8 +1,17 @@
 import numpy as np
 import pandas as pd
 
-def confusion_matrix(predicted, expected, categorie = 1.0)
-    print(pd.DataFrame(check_positive_negative(predicted, expected, categorie)))
+def confusion_matrix(predicted, expected, categorie = 1.0):
+    cat_dic = check_positive_negative(predicted, expected, categorie)
+    matrix = [
+        [cat_dic["true positives"], cat_dic["false positives"]],\
+        [cat_dic["false positives"], cat_dic["true negatives"]]
+        ]
+    col = ["Positive Predicted", "Negative Predicted"]
+    row = ["Positive", "Negative"]
+
+    print(pd.DataFrame(matrix, columns=col, index=row))
+    # print(pd.DataFrame(np.array(cat_dic.items()).reshape(2, 2), columns = ['A, B'], index=['1', '2']))
 
 def check_positive_negative(predicted: np.ndarray, expected: np.ndarray, categorie):
     dic_pos_neg = { "true positives" : 0,

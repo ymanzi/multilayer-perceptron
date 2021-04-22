@@ -1,6 +1,8 @@
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+from lib.data_init import init_array
+from lib.metrics import *
 
 class Softmax:
 	@staticmethod
@@ -43,13 +45,13 @@ class Tanh:
 class ReLu:
 	@staticmethod
 	def fct(x: np.ndarray) -> np.ndarray:
-		return np.maximum(0.01 * x, x)
+		return np.maximum(- 0.01 * x, x)
 	
 	@staticmethod
 	def derivative(x):
-		# return np.where(x < 0, -0.01, 1)
+		return np.where(x < 0, -0.01, 1)
 		# return 1 * ReLu.fct(x)
-		return np.maximum(0.01, x)
+		# return np.maximum(0.01, ReLu.fct(x))
 
 def sigmoid(x: np.ndarray) -> np.ndarray:
 	if x.size == 0:
@@ -117,10 +119,22 @@ class Weight_init:
 
 	@staticmethod
 	def he(layers):
-		return [np.random.randn(x, y) * np.sqrt(2 /(y + x)) / 10 for x,y in zip(layers[1:], layers[:-1])]
+		return [np.random.randn(x, y) / np.sqrt((y + x) / 2) / 10 for x,y in zip(layers[1:], layers[:-1])]
+
+
+def ask_function(question):
+	reply = "lol"
+	while reply not in ['y', 'n']:
+		print("------------------------------------------------------")
+		reply = str(input(question + " (y/n): "))
+		if reply not in ['y', 'n']:
+			print("The only accepted replies are 'y' or 'n'. ")
+	return reply
+
 
 class Network(object):
-	def __init__(self, name, layers, cost=CrossEntropyCost, hidden_activation=Sigmoid, output_activation=Sigmoid, w_init='std'):
+	def __init__(self, name, layers, cost=CrossEntropyCost, hidden_activation=Sigmoid, output_activation=Sigmoid, w_init='std',\
+			epochs=1000, batch_size=32, learning_rate = 1.0, lambda_=0.0, n_epoch_early_stop = 0):
 		''' 
 			Exemple of layers: [2, 3, 1] 
 			if we want to create a Network object with 
@@ -151,28 +165,57 @@ class Network(object):
 		self.list_test_cost = [[],[]]
 		self.output_a = output_activation
 		self.hidden_a = hidden_activation
+		self.epochs = epochs
+		self.batch_size = batch_size
+		self.learning_rate = learning_rate
+		self.lambda_ = lambda_
+		self.n_epoch_early_stop = n_epoch_early_stop
+
+
+	def lunch_test(self, train_data, test_data, val_data):
+		def init_(question ,dataset):
+			reply = ask_function(question)
+			if reply == 'y':
+				print("------------------------------------------------------")
+				print("                       DATA METRICS                   ")
+				print("------------------------------------------------------")
+				print("Cross Entropy Cost: {}".format(self.get_cost(dataset)))
+				tuple_a_y = list(zip(*[(np.argmax(self.feedforward(x)), np.argmax(y))
+						for (x, y) in dataset]))
+				predicted = np.array(tuple_a_y[0])
+				expected = np.array(tuple_a_y[1])
+				print("Accuracy: ", accuracy_score_(predicted, expected))
+				print("Precision (check False Positive): ", precision_score_(predicted, expected, 1))
+				print("Recall Score (check False Negative): ", recall_score_(predicted, expected, 1))
+				print("F1 Score (Both FP and FN): ", f1_score_(predicted, expected, 1))
+				print("\nConfusion Matrix:")
+				confusion_matrix(predicted, expected, 1)
+
+		if train_data:
+			init_("Do you want to test on the train_data ?", train_data)
+		if test_data:
+			init_("Do you want to test on the test_data ?", test_data)
+		if val_data:
+			init_("Do you want to test on the validation_data ?", val_data)
+
 
 	def draw_plot(self):
-		train0 = list(zip(*self.list_train_cost[0]))
-		train1 = list(zip(*self.list_train_cost[1]))
-		
-		test0 = list(zip(*self.list_test_cost[0]))
-		test1 = list(zip(*self.list_test_cost[1]))
-		
-		# print(self.list_test_cost)
-		# exit()
-		# indice = [x for x,y in enumerate(training)]
-		plt.plot(test0[0], test0[1], label= self.name + ' Test Before Early-Stop')
-		plt.plot(train0[0], train0[1], label=self.name + ' Train Before Early-Stop')
-		plt.plot(test1[0], test1[1], label=self.name + ' Test After Early-Stop')
-		plt.plot(train1[0], train1[1], label=self.name + ' Train After Early-Stop')
-		# plt.plot(indice, test)
-		plt.xlabel("Epoch")
-		plt.ylabel("Cost")
-		title = "Start Cost : {}\n End Cost: {}".format(train0[1][0], train1[1][-1])
-		plt.title(title)
-		plt.legend()
-		plt.show()
+		reply = ask_function("Do you want to see the graph ?")
+		if reply == 'y':
+			train0 = list(zip(*self.list_train_cost[0]))
+			train1 = list(zip(*self.list_train_cost[1]))
+			test0 = list(zip(*self.list_test_cost[0]))
+			test1 = list(zip(*self.list_test_cost[1]))
+			plt.plot(test0[0], test0[1], label= self.name + ' Test Before Early-Stop')
+			plt.plot(train0[0], train0[1], label=self.name + ' Train Before Early-Stop')
+			plt.plot(test1[0], test1[1], label=self.name + ' Test After Early-Stop')
+			plt.plot(train1[0], train1[1], label=self.name + ' Train After Early-Stop')
+			plt.xlabel("Epoch")
+			plt.ylabel("Cost")
+			title = "Start Cost : {}\n End Cost: {}".format(train0[1][0], train1[1][-1])
+			plt.title(title)
+			plt.legend()
+			plt.show()
 
 	def feedforward(self, a):
 		"""Return the output of the network if "a" is input.
@@ -221,8 +264,7 @@ class Network(object):
 			nabla_w[-l] = np.dot(delta, list_activation[-l -1].transpose())
 		return (nabla_w, nabla_b)
 	
-	def train_(self, training_data, epochs, mini_batch_size, learning_rate = 1.0,\
-			lambda_=0.0, test_data=None, n_epoch_early_stop = 0):
+	def train_(self, training_data, test_data=None, validation_data=None):
 		"""Train the neural network using mini-batch stochastic
 		gradient descent.  The "training_data" is a list of tuples
 		"(x, y)" representing the training inputs and the desired
@@ -231,7 +273,7 @@ class Network(object):
 		network will be evaluated against the test data after each
 		epoch, and partial progress printed out.  This is useful for
 		tracking progress, but slows things down substantially."""
-		
+
 		#EarlyStop Initialize
 		best_accuracy = 1
 		no_change_best_accuracy = 0
@@ -245,10 +287,10 @@ class Network(object):
 		if test_data:
 			test_data = list(test_data)
 			test_size = len(test_data)
-		for j in range(epochs):
+		for j in range(self.epochs):
 			random.shuffle(training_data)
-			for n in range(0, training_size, mini_batch_size):
-				self.update_minibatch(training_data[n: n + mini_batch_size], learning_rate, lambda_, training_size)
+			for n in range(0, training_size, self.batch_size):
+				self.update_minibatch(training_data[n: n + self.batch_size], self.learning_rate, self.lambda_, training_size)
 			if test_data:
 				accuracy = self.evaluate(test_data)
 				test_cost = self.get_cost(test_data)
@@ -256,12 +298,12 @@ class Network(object):
 				self.list_test_cost[0].append(test_cost)
 				self.list_train_cost[0].append(train_cost)
 
-				if train_cost > 0.5:
-					learning_rate = 1
-				elif 0.07 < train_cost < 0.5:
-					learning_rate = 0.1
-				else:
-					learning_rate = 0.01 
+				# if train_cost > 0.5:
+				# 	learning_rate = 10
+				if 0.07 < train_cost <= 0.5:
+					self.learning_rate = 0.05
+				elif train_cost <= 0.09:
+					self.learning_rate = 0.01 
 
 				# if train_cost < best_cost and train_cost < 0.7 * biggest_cost and learning_rate > 0.01:
 				# 	learning_rate /= 10
@@ -294,14 +336,14 @@ class Network(object):
 				# 		learning_rate = 0.01
 				
 				print("Epoch {}: {} / {} Training Cost: {}  Test Cost: {}  learning_rate: {}".format(
-					j, accuracy, test_size, train_cost, test_cost, learning_rate))
-				if n_epoch_early_stop > 0:
+					j, accuracy, test_size, train_cost, test_cost, self.learning_rate))
+				if self.n_epoch_early_stop > 0:
 					if best_accuracy < accuracy:
 						best_accuracy = accuracy
 						no_change_best_accuracy = 0
 					else:
 						no_change_best_accuracy += 1
-					if no_change_best_accuracy == n_epoch_early_stop:
+					if no_change_best_accuracy == self.n_epoch_early_stop:
 						print("Early stop activated")
 						break
 			else:
@@ -311,15 +353,15 @@ class Network(object):
 			tmp_train = list(enumerate(self.list_train_cost[0]))
 
 			#Separate the list cost to be able to draw plot before and after early-stop is activated"
-			if n_epoch_early_stop:
-				self.list_test_cost = [tmp_test[:-n_epoch_early_stop + 1], tmp_test[-n_epoch_early_stop:]]
-				self.list_train_cost = [tmp_train[:-n_epoch_early_stop + 1], tmp_train[-n_epoch_early_stop:]]
+			if self.n_epoch_early_stop:
+				self.list_test_cost = [tmp_test[:-self.n_epoch_early_stop + 1], tmp_test[-self.n_epoch_early_stop:]]
+				self.list_train_cost = [tmp_train[:-self.n_epoch_early_stop + 1], tmp_train[-self.n_epoch_early_stop:]]
 			else:
 				self.list_test_cost[0] = tmp_test
 				self.list_train_cost[0] = tmp_train
-			# print(tmp_test)
-			# exit()
 			self.draw_plot()
+
+			self.lunch_test(training_data, test_data, list(validation_data))
 		return (self.list_train_cost, self.list_test_cost)
 
 	
