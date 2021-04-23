@@ -5,7 +5,7 @@ from lib.utils import *
 def split_data(filename):
 	df = pd.read_csv(filename, header=None).dropna().drop_duplicates()
 	y = df[1].replace(['B', 'M'], [0, 1])
-	x = df.drop(columns = [1])
+	x = df.drop(columns = [1, 4])
 	data = data_spliter(x.values, y.values.reshape(-1, 1), 0.5) # , np.array(y_train).reshape(-1, 1), 0.6)
 	pd.DataFrame(data[0]).to_csv("resources/x_train.csv", header = None, index=False)
 	pd.DataFrame(data[1]).to_csv("resources/y_train.csv", header = None, index=False)

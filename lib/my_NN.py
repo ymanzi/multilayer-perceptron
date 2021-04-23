@@ -3,123 +3,26 @@ import random
 import matplotlib.pyplot as plt
 from lib.data_init import init_array
 from lib.metrics import *
+from lib.activation_functions import *
+from lib.cost_functions import *
+from lib.weight_init import *
 
-class Softmax:
-	@staticmethod
-	def fct(x: np.ndarray) -> np.ndarray:
-		vec = np.exp(x)
-		return vec / np.sum(vec)
-	
-	@staticmethod
-	def derivative(x):
-		sm = Softmax.fct(x)
-		return sm * (1.0 - sm)
 
-class Sigmoid:
-	@staticmethod
-	def fct(x: np.ndarray) -> np.ndarray:
-		if x.size == 0:
-			return None
-		x = x.astype(float)
-		if x.ndim == 0:
-			x = np.array(x, ndmin=1)
-		return (1.0 / (1.0 + (np.exp(-x))))
-
-	@staticmethod
-	def derivative(x):
-		sig = Sigmoid.fct(x)
-		return sig * (1.0 - sig)
-
-class Tanh:
-	@staticmethod
-	def fct(x: np.ndarray) -> np.ndarray:
-		pos_val = np.exp(x)
-		neg_val = np.exp(-x)
-		return (pos_val - neg_val) / (pos_val + neg_val)
-
-	@staticmethod
-	def derivative(x):
-		t = Tanh.fct(x)
-		return 1.0 - t**2
-
-class ReLu:
-	@staticmethod
-	def fct(x: np.ndarray) -> np.ndarray:
-		return np.maximum(- 0.01 * x, x)
-	
-	@staticmethod
-	def derivative(x):
-		return np.where(x < 0, -0.01, 1)
 		# return 1 * ReLu.fct(x)
 		# return np.maximum(0.01, ReLu.fct(x))
 
-def sigmoid(x: np.ndarray) -> np.ndarray:
-	if x.size == 0:
-		return None
-	x = x.astype(float)
-	if x.ndim == 0:
-		x = np.array(x, ndmin=1)
-	return (1.0 / (1.0 + (np.exp(-x))))
+# def sigmoid(x: np.ndarray) -> np.ndarray:
+# 	if x.size == 0:
+# 		return None
+# 	x = x.astype(float)
+# 	if x.ndim == 0:
+# 		x = np.array(x, ndmin=1)
+# 	return (1.0 / (1.0 + (np.exp(-x))))
 
-def sigmoid_derivative(x):
-	sig = sigmoid(x)
-	return sig * (1.0 - sig)
+# def sigmoid_derivative(x):
+# 	sig = sigmoid(x)
+# 	return sig * (1.0 - sig)
 
-class MSE(object):
-	"""
-		def sigmoid_derivative(x):
-			sig = sigmoid(x)
-			return sig * (1.0 - sig)
-	"""
-
-	@staticmethod
-	def value(a, y):
-		"""Return the cost associated with an output ``a`` and desired output
-		``y``.
-		"""
-		return 0.5*np.linalg.norm(a-y)**2 / a.shape[0]
-		
-	@staticmethod
-	def delta(z, a, y):
-		"""Return the error delta from the output layer."""
-		return np.subtract(a, y) * sigmoid_derivative(z) ######## A MODIFIER
-
-class CrossEntropyCost(object):
-
-	@staticmethod
-	def value(a, y):
-		"""Return the cost associated with an output ``a`` and desired output
-		``y``.  Note that np.nan_to_num is used to ensure numerical
-		stability for log close to 0 values.  In particular, if both ``a`` and ``y`` have a 1.0
-		in the same slot, then the expression (1-y)*np.log(1-a)
-		returns nan.  The np.nan_to_num ensures that that is converted
-		to the correct value (0.0).
-		"""
-		return np.sum(np.nan_to_num(-y*np.log(a + 1e-15)-(1-y)*np.log(1-a + 1e-15))) / (a.shape[0] * a.shape[1])
-
-	@staticmethod
-	def delta(z, a, y):
-		"""Return the error delta from the output layer.  Note that the
-        parameter ``z`` is not used by the method.  It is included in
-        the method's parameters in order to make the interface
-        consistent with the delta method for other cost classes.
-
-		C = −[ylna+(1−y)ln(1−a)]
-        """
-		return np.subtract(a, y)
-
-class Weight_init:
-	@staticmethod
-	def std(layers):
-		return [np.random.randn(x, y) for x,y in zip(layers[1:], layers[:-1])]
-
-	@staticmethod
-	def xavier(layers):
-		return [np.random.randn(x, y) / np.sqrt(y + x) for x,y in zip(layers[1:], layers[:-1])]
-
-	@staticmethod
-	def he(layers):
-		return [np.random.randn(x, y) / np.sqrt((y + x) / 2) / 10 for x,y in zip(layers[1:], layers[:-1])]
 
 
 def ask_function(question):
@@ -170,6 +73,8 @@ class Network(object):
 		self.learning_rate = learning_rate
 		self.lambda_ = lambda_
 		self.n_epoch_early_stop = n_epoch_early_stop
+		self.saved_weights = None
+		self.saved_biases = None
 
 
 	def lunch_test(self, train_data, test_data, val_data):
@@ -196,6 +101,7 @@ class Network(object):
 		if test_data:
 			init_("Do you want to test on the test_data ?", test_data)
 		if val_data:
+			val_data = list(val_data)
 			init_("Do you want to test on the validation_data ?", val_data)
 
 
@@ -277,10 +183,13 @@ class Network(object):
 		#EarlyStop Initialize
 		best_accuracy = 1
 		no_change_best_accuracy = 0
+		best_test_cost = 1
+		prev_train_cost = 0
+		prev_test_cost = 0
 
-		best_cost = 1
-		biggest_cost = 1
-		no_change_best_cost = 0
+		diff_cost = -1
+		# biggest_cost = 1
+		no_change_diff_cost = 0
 
 		training_data = list(training_data)
 		training_size = len(training_data)
@@ -298,12 +207,12 @@ class Network(object):
 				self.list_test_cost[0].append(test_cost)
 				self.list_train_cost[0].append(train_cost)
 
-				# if train_cost > 0.5:
-				# 	learning_rate = 10
-				if 0.07 < train_cost <= 0.5:
-					self.learning_rate = 0.05
-				elif train_cost <= 0.09:
-					self.learning_rate = 0.01 
+				# if 0.1 < train_cost <= 0.5:
+				# 	self.learning_rate = 0.1
+				# if 0.03 < train_cost <= 0.1:
+				# 	self.learning_rate = 0.01
+				if train_cost <= 0.07:
+					self.learning_rate = 0.005
 
 				# if train_cost < best_cost and train_cost < 0.7 * biggest_cost and learning_rate > 0.01:
 				# 	learning_rate /= 10
@@ -318,13 +227,13 @@ class Network(object):
 				# 	learning_rate = 0.01
 				# 	# lambda_ = 0.01
 
-				if test_cost < best_cost:
-					best_cost = test_cost
-					no_change_best_cost = 0
-				else:
-					no_change_best_cost += 1
-					if no_change_best_cost == 2:
-						best_cost = test_cost
+				# if test_cost < best_cost:
+				# 	best_cost = test_cost
+				# 	no_change_best_cost = 0
+				# else:
+				# 	no_change_best_cost += 1
+				# 	if no_change_best_cost == 2:
+				# 		best_cost = test_cost
 				
 				# if best_cost < 0.1:
 				# 	learning_rate = 0.01
@@ -338,14 +247,31 @@ class Network(object):
 				print("Epoch {}: {} / {} Training Cost: {}  Test Cost: {}  learning_rate: {}".format(
 					j, accuracy, test_size, train_cost, test_cost, self.learning_rate))
 				if self.n_epoch_early_stop > 0:
-					if best_accuracy < accuracy:
-						best_accuracy = accuracy
-						no_change_best_accuracy = 0
+					if  np.absolute(prev_test_cost - test_cost) >= np.absolute(prev_train_cost - train_cost) and test_cost < best_test_cost:
+						no_change_diff_cost = 0
+						self.saved_biases = self.biases
+						self.saved_weights = self.weights
+						best_test_cost = test_cost
+						print("OUI")
 					else:
-						no_change_best_accuracy += 1
-					if no_change_best_accuracy == self.n_epoch_early_stop:
+						no_change_diff_cost += 1
+					prev_test_cost = test_cost
+					prev_train_cost = train_cost
+						# diff_cost = np.absolute(test_cost - train_cost)
+					if no_change_diff_cost == self.n_epoch_early_stop:
 						print("Early stop activated")
+						self.weights = self.saved_weights
+						self.biases = self.saved_biases
 						break
+				# if self.n_epoch_early_stop > 0:
+				# 	if np.absolute() best_accuracy < accuracy:
+				# 		best_accuracy = accuracy
+				# 		no_change_best_accuracy = 0
+				# 	else:
+				# 		no_change_best_accuracy += 1
+				# 	if no_change_best_accuracy == self.n_epoch_early_stop:
+				# 		print("Early stop activated")
+				# 		break
 			else:
 				print("Epoch {0} complete".format(j))
 		if test_data:
@@ -360,8 +286,7 @@ class Network(object):
 				self.list_test_cost[0] = tmp_test
 				self.list_train_cost[0] = tmp_train
 			self.draw_plot()
-
-			self.lunch_test(training_data, test_data, list(validation_data))
+			self.lunch_test(training_data, test_data, validation_data)
 		return (self.list_train_cost, self.list_test_cost)
 
 	

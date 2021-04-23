@@ -25,17 +25,58 @@ def ask_function(question):
 
 
 
-while True:
-	NN = Network("mini-batch | Tanh | Xavier | CE" ,[31, 4, 3, 2], hidden_activation=Tanh, output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
-	epochs=1000, batch_size=32, learning_rate=0.1, lambda_=2, n_epoch_early_stop=100)
-	cost_tuple = NN.train_(zip(x_train, y_train), test_data=zip(x_test, y_test), validation_data = zip(x_val, y_val))
-	reply = ask_function("Do you want to save this Network ?")
-	if reply == 'y':
-		# pd.DataFrame(np.array(NN.weights, dtype=list)).to_csv("weights.csv", header=None, index=False)
-		# pd.DataFrame( np.array(NN.weights, dtype=list)).to_csv("biases.csv", header=None, index=False)
-		with open("saved_network.pickle", 'wb') as f:
-			pickle.dump(NN, f)
-		break
+def lunch_neural(name, layers, cost=CrossEntropyCost, hidden_activation=Sigmoid, output_activation=Sigmoid, w_init='std',\
+			epochs=1000, batch_size=32, learning_rate = 1.0, lambda_=1.0, n_epoch_early_stop = 0,\
+				train_data=zip(x_train, y_train), test_data=zip(x_test, y_test), val_data=None):
+	if train_data:
+		train_data = list(train_data)
+	if test_data:
+		test_data = list(test_data)
+	if val_data:
+		val_data = list(val_data)
+	while True:
+		NN = Network(name, layers, hidden_activation=hidden_activation, output_activation=output_activation, cost=cost, w_init=w_init,\
+		epochs=epochs, batch_size=batch_size, learning_rate=learning_rate, lambda_=lambda_, n_epoch_early_stop=n_epoch_early_stop)
+		# cost_tuple = NN.train_(zip(x_train, y_train), test_data=zip(x_test, y_test), validation_data = zip(x_val, y_val))
+		cost_tuple = NN.train_(train_data, test_data, val_data)
+		reply = ask_function("Do you want to save this Network ?")
+		if reply == 'y':
+			with open("saved_network.pickle", 'wb') as f:
+				pickle.dump(NN, f)
+			return cost_tuple
+
+
+# cost_tuple = lunch_neural("mini-batch | Tanh | Xavier | CE" ,[30, 5, 3, 2], hidden_activation=Tanh,\
+# 	output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
+# 	epochs=1000, batch_size=32, learning_rate=0.1, lambda_=0.0, n_epoch_early_stop=100,\
+# 		train_data=zip(x_train, y_train), test_data=zip(x_test, y_test), val_data=zip(x_val, y_val))
+
+cost_tuple = lunch_neural("Stochastic | Sigmoid | xavier | CE" ,[30, 4, 3, 2], hidden_activation=Sigmoid,\
+	output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
+	epochs=1000, batch_size=1, learning_rate=0.005, lambda_=0, n_epoch_early_stop=100,\
+	train_data=zip(x_train, y_train), test_data=zip(x_test, y_test), val_data=None)
+
+# cost_tuple = lunch_neural("mini-batch | Sigmoid | std | CE" ,[31, 4, 3, 2], hidden_activation=Sigmoid,\
+# 	output_activation=Softmax, cost=CrossEntropyCost, w_init='std',\
+# 	epochs=1000, batch_size=32, learning_rate=0.1, lambda_=1.0, n_epoch_early_stop=100,\
+# 	train_data=zip(x_train, y_train), test_data=zip(x_test, y_test), val_data=zip(x_val, y_val))
+
+# cost_tuple = lunch_neural("mini-batch | ReLU | he | CE" ,[31, 4, 3, 2], hidden_activation=ReLu,\
+# 	output_activation=Softmax, cost=CrossEntropyCost, w_init='he',\
+# 	epochs=1000, batch_size=32, learning_rate=0.5, lambda_=2.0, n_epoch_early_stop=100,\
+# 	train_data=zip(x_train, y_train), test_data=zip(x_test, y_test), val_data=zip(x_val, y_val))
+
+# while True:
+# 	NN = Network("mini-batch | Tanh | Xavier | CE" ,[31, 4, 3, 2], hidden_activation=Tanh, output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
+# 	epochs=1000, batch_size=32, learning_rate=0.1, lambda_=2, n_epoch_early_stop=100)
+# 	# cost_tuple = NN.train_(zip(x_train, y_train), test_data=zip(x_test, y_test), validation_data = zip(x_val, y_val))
+# 	cost_tuple = NN.train_(zip(x_train, y_train), test_data=zip(x_test, y_test))
+# 	reply = ask_function("Do you want to save this Network ?")
+# 	if reply == 'y':
+# 		with open("saved_network.pickle", 'wb') as f:
+# 			pickle.dump(NN, f)
+# 		break
+# 		# return cost_tuple
 
 # NN2 = Network("Stochastic | Sigmoid | xavier | CE" ,[31, 4, 3, 2], hidden_activation=Sigmoid, output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier')
 # cost_tuple = NN2.train_(zip(x_train, y_train), 1000, 1, learning_rate=0.01, lambda_=0.1, test_data=zip(x_test, y_test), n_epoch_early_stop=100)

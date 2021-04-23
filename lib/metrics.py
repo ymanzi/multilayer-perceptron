@@ -4,7 +4,7 @@ import pandas as pd
 def confusion_matrix(predicted, expected, categorie = 1.0):
     cat_dic = check_positive_negative(predicted, expected, categorie)
     matrix = [
-        [cat_dic["true positives"], cat_dic["false positives"]],\
+        [cat_dic["true positives"], cat_dic["false negatives"]],\
         [cat_dic["false positives"], cat_dic["true negatives"]]
         ]
     col = ["Positive Predicted", "Negative Predicted"]
