@@ -21,7 +21,9 @@ from lib.data_init import *
 
 # print(Softmax.fct(arr))
 
-split_data("resources/data.csv")
-split_validation("resources/x_test.csv", "resources/y_test.csv")
+# split_data("resources/data.csv")
+# split_validation("resources/x_test.csv", "resources/y_test.csv")
 
 
+data_train, data_test = init_project_data("resources/data.csv")
+print(data_test)

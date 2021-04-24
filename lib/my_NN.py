@@ -24,7 +24,6 @@ from lib.weight_init import *
 # 	return sig * (1.0 - sig)
 
 
-
 def ask_function(question):
 	reply = "lol"
 	while reply not in ['y', 'n']:
@@ -37,7 +36,7 @@ def ask_function(question):
 
 class Network(object):
 	def __init__(self, name, layers, cost=CrossEntropyCost, hidden_activation=Sigmoid, output_activation=Sigmoid, w_init='std',\
-			epochs=1000, batch_size=32, learning_rate = 1.0, lambda_=0.0, n_epoch_early_stop = 0):
+			epochs=1000, batch_size=32, learning_rate = 1.0, lambda_=0.0, n_epoch_early_stop = 0, momentum=0.0):
 		''' 
 			Exemple of layers: [2, 3, 1] 
 			if we want to create a Network object with 
@@ -75,6 +74,9 @@ class Network(object):
 		self.n_epoch_early_stop = n_epoch_early_stop
 		self.saved_weights = None
 		self.saved_biases = None
+		self.old_nabla_w = [np.zeros(w.shape) for w in self.weights]
+		self.old_nabla_b = [np.zeros(b.shape) for b in self.biases]
+		self.momentum_ = momentum
 
 
 	def lunch_test(self, train_data, test_data, val_data):
@@ -209,10 +211,10 @@ class Network(object):
 
 				# if 0.1 < train_cost <= 0.5:
 				# 	self.learning_rate = 0.1
-				# if 0.03 < train_cost <= 0.1:
-				# 	self.learning_rate = 0.01
+				if 0.03 < train_cost <= 0.1:
+					self.learning_rate = 0.05
 				if train_cost <= 0.07:
-					self.learning_rate = 0.005
+					self.learning_rate = 0.01
 
 				# if train_cost < best_cost and train_cost < 0.7 * biggest_cost and learning_rate > 0.01:
 				# 	learning_rate /= 10
@@ -287,7 +289,7 @@ class Network(object):
 				self.list_train_cost[0] = tmp_train
 			self.draw_plot()
 			self.lunch_test(training_data, test_data, validation_data)
-		return (self.list_train_cost, self.list_test_cost)
+		return [self.list_train_cost, self.list_test_cost]
 
 	
 	def update_minibatch(self, batch, learning_rate, lambda_, n):
@@ -307,9 +309,12 @@ class Network(object):
 			delta_nabla_w, delta_nabla_b = self.backpropagation(x, y)
 			nabla_b = [nb + dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
 			nabla_w = [nw + dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
-		self.weights = [(1-(learning_rate* lambda_ /n))*w - (learning_rate / len(batch) * dw) for w, dw in zip(self.weights, nabla_w)]
-		self.biases = [b - (learning_rate / len(batch) * db) for b, db in zip(self.biases, nabla_b)]
-
+		self.weights = [(1-(learning_rate* lambda_ /n))*w - (learning_rate / len(batch) * (dw + self.momentum_ * odw)) for w, dw, odw in zip(self.weights, nabla_w, self.old_nabla_w)]
+		self.biases = [b - (learning_rate / len(batch) * (db + self.momentum_ * odb)) for b, db, odb in zip(self.biases, nabla_b, self.old_nabla_b)]
+		
+		# Momentum
+		self.old_nabla_w = nabla_w
+		self.old_nabla_b = nabla_b
 
 	def evaluate(self, test_data):
 		"""Return the number of test inputs for which the neural
