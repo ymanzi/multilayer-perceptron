@@ -211,10 +211,10 @@ class Network(object):
 
 				# if 0.1 < train_cost <= 0.5:
 				# 	self.learning_rate = 0.1
-				if 0.03 < train_cost <= 0.1:
-					self.learning_rate = 0.05
-				if train_cost <= 0.07:
-					self.learning_rate = 0.01
+				# if 0.03 < train_cost <= 0.1:
+				# 	self.learning_rate = 0.05
+				# if train_cost <= 0.07:
+				# 	self.learning_rate = 0.01
 
 				# if train_cost < best_cost and train_cost < 0.7 * biggest_cost and learning_rate > 0.01:
 				# 	learning_rate /= 10
@@ -249,7 +249,8 @@ class Network(object):
 				print("Epoch {}: {} / {} Training Cost: {}  Test Cost: {}  learning_rate: {}".format(
 					j, accuracy, test_size, train_cost, test_cost, self.learning_rate))
 				if self.n_epoch_early_stop > 0:
-					if  np.absolute(prev_test_cost - test_cost) >= np.absolute(prev_train_cost - train_cost) and test_cost < best_test_cost:
+					if  (np.absolute(prev_test_cost - test_cost) >= np.absolute(prev_train_cost - train_cost) and test_cost < best_test_cost) or \
+						(prev_test_cost - test_cost > 0 and prev_train_cost - train_cost > 0 and test_cost < best_test_cost):
 						no_change_diff_cost = 0
 						self.saved_biases = self.biases
 						self.saved_weights = self.weights

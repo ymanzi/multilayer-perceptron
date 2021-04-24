@@ -43,32 +43,29 @@ def lunch_neural(name, layers, train_data, test_data, cost=CrossEntropyCost, hid
 def main(data_train, data_test):
 	list_cost = []
 
-	cost_tuple = lunch_neural("mini-batch|Tanh|Xavier|CE" ,[29, 4, 3, 2], hidden_activation=Tanh,\
-		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
-		epochs=1000, batch_size=32, learning_rate=0.1, lambda_=4.0, n_epoch_early_stop=100, momentum=0.9,\
-			train_data=data_train, test_data=data_test, val_data=None)
-	list_cost.append(cost_tuple)
+	# cost_tuple = lunch_neural("mini-batch|Tanh|Xavier|CE" ,[29, 2, 2, 2], hidden_activation=Tanh,\
+	# 	output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
+	# 	epochs=1000, batch_size=32, learning_rate=0.01, lambda_=0.5, n_epoch_early_stop=100, momentum=0.9,\
+	# 		train_data=data_train, test_data=data_test, val_data=None)
+	# list_cost.append(cost_tuple)
 
 	reply = ask_function("Do you want to see the bonuses ?")
 	if reply == 'y':
-		cost_tuple = lunch_neural("Stochastic|Sigmoid|xavier|CE" ,[29, 4, 3, 2], hidden_activation=Sigmoid,\
-			output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
-			# epochs=1000, batch_size=1, learning_rate=0.01, lambda_=0.4, n_epoch_early_stop=100, momentum=0.9,\
-			epochs=1000, batch_size=1, learning_rate=0.01, lambda_=1.5, n_epoch_early_stop=100, momentum=0.9,\
-			train_data=data_train, test_data=data_test, val_data=None)
-		list_cost.append(cost_tuple)
+		# cost_tuple = lunch_neural("Stochastic|Sigmoid|xavier|CE" ,[29, 4, 3, 2], hidden_activation=Sigmoid,\
+		# 	output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
+		# 	epochs=10000, batch_size=1, learning_rate=0.01, lambda_=2.0, n_epoch_early_stop=100, momentum=0.9,\
+		# 	train_data=data_train, test_data=data_test, val_data=None)
+		# list_cost.append(cost_tuple)
 
-		cost_tuple = lunch_neural("mini-batch|Sigmoid|std|CE" ,[29, 4, 3, 2], hidden_activation=Sigmoid,\
-			output_activation=Softmax, cost=CrossEntropyCost, w_init='std',\
-			epochs=1000, batch_size=32, learning_rate=0.1, lambda_=1.5, n_epoch_early_stop=100, momentum=0.9,\
-			# epochs=1000, batch_size=32, learning_rate=0.1, lambda_=0.5, n_epoch_early_stop=100, momentum=0.9,\
-			train_data=data_train, test_data=data_test, val_data=None)
-		list_cost.append(cost_tuple)
+		# cost_tuple = lunch_neural("mini-batch|Sigmoid|xavier|CE" ,[29, 4, 3, 2], hidden_activation=Sigmoid,\
+		# 	output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
+		# 	epochs=10000, batch_size=32, learning_rate=0.01, lambda_=2.0, n_epoch_early_stop=100, momentum=0.9,\
+		# 	train_data=data_train, test_data=data_test, val_data=None)
+		# list_cost.append(cost_tuple)
 
 		cost_tuple = lunch_neural("mini-batch|ReLU|he|CE" ,[29, 4, 3, 2], hidden_activation=ReLu,\
 			output_activation=Softmax, cost=CrossEntropyCost, w_init='he',\
-			epochs=1000, batch_size=32, learning_rate=0.1, lambda_=1.5, n_epoch_early_stop=100, momentum=0.9,\
-			# epochs=1000, batch_size=32, learning_rate=0.1, lambda_=0.5, n_epoch_early_stop=100, momentum=0.9,\
+			epochs=1000, batch_size=32, learning_rate=0.1, lambda_=0.3, n_epoch_early_stop=100, momentum=0.9,\
 			train_data=data_train, test_data=data_test, val_data=None)
 		list_cost.append(cost_tuple)
 	# show_big_plot(list_cost)
