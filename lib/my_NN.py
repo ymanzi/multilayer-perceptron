@@ -78,7 +78,6 @@ class Network(object):
 		self.old_nabla_b = [np.zeros(b.shape) for b in self.biases]
 		self.momentum_ = momentum
 
-
 	def lunch_test(self, train_data, test_data, val_data):
 		def init_(question ,dataset):
 			reply = ask_function(question)
@@ -190,7 +189,6 @@ class Network(object):
 		prev_test_cost = 0
 
 		diff_cost = -1
-		# biggest_cost = 1
 		no_change_diff_cost = 0
 
 		training_data = list(training_data)
@@ -201,50 +199,14 @@ class Network(object):
 		for j in range(self.epochs):
 			random.shuffle(training_data)
 			for n in range(0, training_size, self.batch_size):
-				self.update_minibatch(training_data[n: n + self.batch_size], self.learning_rate, self.lambda_, training_size)
+				
+				self.update_minibatch(training_data[0: 0 + self.batch_size], self.learning_rate, self.lambda_, training_size)
 			if test_data:
 				accuracy = self.evaluate(test_data)
 				test_cost = self.get_cost(test_data)
 				train_cost = self.get_cost(training_data)
 				self.list_test_cost[0].append(test_cost)
 				self.list_train_cost[0].append(train_cost)
-
-				# if 0.1 < train_cost <= 0.5:
-				# 	self.learning_rate = 0.1
-				# if 0.03 < train_cost <= 0.1:
-				# 	self.learning_rate = 0.05
-				# if train_cost <= 0.07:
-				# 	self.learning_rate = 0.01
-
-				# if train_cost < best_cost and train_cost < 0.7 * biggest_cost and learning_rate > 0.01:
-				# 	learning_rate /= 10
-				# 	# lambda_ /= 10
-				# 	biggest_cost = train_cost
-				# 	best_cost = train_cost
-				# 	if learning_rate < 0.01:
-				# 		learning_rate = 0.01
-				
-				
-				# if train_cost < 0.1:
-				# 	learning_rate = 0.01
-				# 	# lambda_ = 0.01
-
-				# if test_cost < best_cost:
-				# 	best_cost = test_cost
-				# 	no_change_best_cost = 0
-				# else:
-				# 	no_change_best_cost += 1
-				# 	if no_change_best_cost == 2:
-				# 		best_cost = test_cost
-				
-				# if best_cost < 0.1:
-				# 	learning_rate = 0.01
-
-				# if no_change_best_cost > 1 and learning_rate >= 1:
-				# 	learning_rate /= 2
-				# 	no_change_best_cost = 0
-				# 	if learning_rate < 0.01:
-				# 		learning_rate = 0.01
 				
 				print("Epoch {}: {} / {} Training Cost: {}  Test Cost: {}  learning_rate: {}".format(
 					j, accuracy, test_size, train_cost, test_cost, self.learning_rate))
@@ -260,21 +222,11 @@ class Network(object):
 						no_change_diff_cost += 1
 					prev_test_cost = test_cost
 					prev_train_cost = train_cost
-						# diff_cost = np.absolute(test_cost - train_cost)
 					if no_change_diff_cost == self.n_epoch_early_stop:
 						print("Early stop activated")
 						self.weights = self.saved_weights
 						self.biases = self.saved_biases
 						break
-				# if self.n_epoch_early_stop > 0:
-				# 	if np.absolute() best_accuracy < accuracy:
-				# 		best_accuracy = accuracy
-				# 		no_change_best_accuracy = 0
-				# 	else:
-				# 		no_change_best_accuracy += 1
-				# 	if no_change_best_accuracy == self.n_epoch_early_stop:
-				# 		print("Early stop activated")
-				# 		break
 			else:
 				print("Epoch {0} complete".format(j))
 		if test_data:
@@ -336,7 +288,7 @@ class Network(object):
 		a = np.array(tuple_a_y[0])
 		y = np.array(tuple_a_y[1])
 
-		return self.cost.value(a , y)
+		return self.cost.value(a , y, self.weights, self.lambda_)
 
 # nn = Network([3, 2, 1])
 # print(nn.feedforward(np.random.randn(3, 1)), "\n\n")

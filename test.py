@@ -13,7 +13,8 @@ from lib.data_init import *
 
 
 
-# p = np.array([[1,-1], [3,-3], [2,-2]])
+p = np.array([[1,-1, -1], [3,-3, 3], [2,-2, 2]])
+print(np.sum(p))
 # e = np.array([[-5,-5], [3,0], [2,0]])
 
 
@@ -25,5 +26,5 @@ from lib.data_init import *
 # split_validation("resources/x_test.csv", "resources/y_test.csv")
 
 
-data_train, data_test = init_project_data("resources/data.csv")
-print(data_test)
+# data_train, data_test = init_project_data("resources/data.csv")
+# print(data_test)

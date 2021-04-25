@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class MSE(object):
 	"""
 		def sigmoid_derivative(x):
@@ -8,11 +9,12 @@ class MSE(object):
 	"""
 
 	@staticmethod
-	def value(a, y):
+	def value(a, y, weights, lambda_):
 		"""Return the cost associated with an output ``a`` and desired output
 		``y``.
 		"""
-		return 0.5*np.linalg.norm(a-y)**2 / (a.shape[0] * a.shape[1])
+		unregularize = 0.5* (np.linalg.norm(a-y)**2) / (a.shape[0] * a.shape[1])
+		return unregularize + (0.5*lambda_*np.sum(np.square(weights[-1])) / (a.shape[0] * a.shape[1])) 
 		
 	@staticmethod
 	def delta(z, a, y):
@@ -22,7 +24,7 @@ class MSE(object):
 class CrossEntropyCost(object):
 
 	@staticmethod
-	def value(a, y):
+	def value(a, y, weights, lambda_):
 		"""Return the cost associated with an output ``a`` and desired output
 		``y``.  Note that np.nan_to_num is used to ensure numerical
 		stability for log close to 0 values.  In particular, if both ``a`` and ``y`` have a 1.0
@@ -30,7 +32,8 @@ class CrossEntropyCost(object):
 		returns nan.  The np.nan_to_num ensures that that is converted
 		to the correct value (0.0).
 		"""
-		return np.sum(np.nan_to_num(-y*np.log(a + 1e-15)-(1-y)*np.log(1-a + 1e-15))) / (a.shape[0] * a.shape[1])
+		unregularize = np.sum(np.nan_to_num(-y*np.log(a + 1e-15)-(1-y)*np.log(1-a + 1e-15)))  / (a.shape[0] * a.shape[1])
+		return unregularize + (0.5*lambda_*np.sum(np.square(weights[-1])) / (a.shape[0] * a.shape[1])) 
 
 	@staticmethod
 	def delta(z, a, y):
