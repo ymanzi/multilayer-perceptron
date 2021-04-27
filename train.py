@@ -16,6 +16,27 @@ def save_function(question):
 	return reply
 
 
+def show_big_plot(list_nn):
+	for nn in list_nn:
+		train0 = list(zip(*nn.list_train_cost[0]))
+		train1 = list(zip(*nn.list_train_cost[1]))
+		test0 = list(zip(*nn.list_test_cost[0]))
+		test1 = list(zip(*nn.list_test_cost[1]))
+		# plt.plot(test0[0], test0[1], label= nn.name + ' Test Before Early-Stop')
+		plt.plot(train0[0], train0[1], label=nn.name + ' Train Before Early-Stop')
+		# plt.plot(test1[0], test1[1], label=nn.name + ' Test After Early-Stop')
+		plt.plot(train1[0], train1[1], label=nn.name + ' Train After Early-Stop')
+	plt.xlabel("Epoch")
+	plt.ylabel("Cost")
+	title = "{}".format("ALL THE PLOTS")
+	plt.title(title)
+	plt.legend()
+	plt.show()
+	
+
+	
+
+
 def lunch_neural(name, layers, datafile, cost=CrossEntropyCost, hidden_activation=Sigmoid, \
 	output_activation=Sigmoid, w_init='std', epochs=1000, batch_size=32, \
 	learning_rate = 1.0, lambda_=0.0, n_epoch_early_stop=0, momentum=0, dropout=0.0):
@@ -34,44 +55,42 @@ def lunch_neural(name, layers, datafile, cost=CrossEntropyCost, hidden_activatio
 					pickle.dump(NN, f)
 			return NN
 
-# def show_big_plot
-
 
 def main(filename):
 	list_nn = []
-	cost_tuple = lunch_neural("1-mini-batch|Tanh" ,[29, 30, 20, 2], hidden_activation=Tanh,\
+	nn = lunch_neural("1-mini-batch|Tanh" ,[29, 30, 20, 2], hidden_activation=Tanh,\
 		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
-		epochs=10000, batch_size=30, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
+		epochs=10000, batch_size=10, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
 			datafile=filename, dropout=0.4)
-	list_nn.append(cost_tuple)
+	list_nn.append(nn)
 
-	cost_tuple = lunch_neural("2-5Layers|Tanh" ,[29, 40, 30, 20, 2], hidden_activation=Tanh,\
+	nn = lunch_neural("2-5Layers|Tanh" ,[29, 40, 30, 20, 2], hidden_activation=Tanh,\
 		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
-		epochs=10000, batch_size=30, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-			datafile=filename, dropout=0.4)
-	list_nn.append(cost_tuple)
+		epochs=10000, batch_size=10, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
+			datafile=filename, dropout=0.5)
+	list_nn.append(nn)
 
 	reply = ask_function("Do you want to see the bonuses ?")
 	if reply == 'y':
-		cost_tuple = lunch_neural("3-Stochastic|Sigmoid" ,[29, 40, 30, 20, 2], hidden_activation=Sigmoid,\
+		nn = lunch_neural("3-Stochastic|Sigmoid" ,[29, 60, 40, 30, 2], hidden_activation=Sigmoid,\
 		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
-		epochs=10000, batch_size=1, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-		datafile= filename, dropout=0.4)
-		list_nn.append(cost_tuple)
+		epochs=10000, batch_size=1, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.0,\
+		datafile= filename, dropout=0.5)
+		list_nn.append(nn)
 
-		cost_tuple = lunch_neural("4-mini-batch|Sigmoid" ,[29, 30, 20, 2], hidden_activation=Sigmoid,\
+		nn = lunch_neural("4-mini-batch|Sigmoid" ,[29, 40, 30, 2], hidden_activation=Sigmoid,\
 		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
-		epochs=10000, batch_size=32, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-		datafile= filename, dropout=0.4)
-		list_nn.append(cost_tuple)
+		epochs=10000, batch_size=10, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
+		datafile= filename, dropout=0.5)
+		list_nn.append(nn)
 	
-		cost_tuple = lunch_neural("5-mini-batch|ReLU|he" ,[29, 40, 30, 20, 2], hidden_activation=ReLu,\
+		nn = lunch_neural("5-mini-batch|ReLU|he" ,[29, 40, 30, 20, 2], hidden_activation=ReLu,\
 		output_activation=Softmax, cost=CrossEntropyCost, w_init='he',\
-		epochs=10000, batch_size=32, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-		datafile=filename, dropout=0.4)
-		list_nn.append(cost_tuple)
+		epochs=10000, batch_size=10, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
+		datafile=filename, dropout=0.5)
+		list_nn.append(nn)
+	show_big_plot(list_nn)
 
-	# show_big_plot(list_nn)
 if __name__ == "__main__":
 	if len(sys.argv) not in [1, 2]:
 		print("incorrect number of arguments")

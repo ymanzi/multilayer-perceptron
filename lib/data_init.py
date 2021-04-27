@@ -18,7 +18,7 @@ def init_project_train(filename):
 	df = pd.read_csv(filename, header=None).dropna().drop_duplicates()
 	y = df[1].replace(['B', 'M'], [0, 1])
 	x = df.drop(columns = [1, 4, 5]) #4 5
-	data = data_spliter(x.values, y.values.reshape(-1, 1), 0.8) # , np.array(y_train).reshape(-1, 1), 0.6)
+	data = data_spliter(x.values, y.values.reshape(-1, 1), 0.7) # , np.array(y_train).reshape(-1, 1), 0.6)
 	
 	x_train = init_array(data[0], 'x')
 	y_train = init_array(data[1], 'y')
