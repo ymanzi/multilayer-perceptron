@@ -25,12 +25,12 @@ def lunch_neural(name, layers, datafile, cost=CrossEntropyCost, hidden_activatio
 		NN = Network(name, layers, hidden_activation=hidden_activation, output_activation=output_activation, cost=cost, w_init=w_init,\
 		epochs=epochs, batch_size=batch_size, learning_rate=learning_rate, lambda_=lambda_, n_epoch_early_stop=n_epoch_early_stop,\
 			momentum=momentum, dropout=dropout)
-		
+		input('''========================\n= PRESS ENTER TO TRAIN =\n========================''')
 		NN.train_(train_data, test_data)
 		reply = save_function("Do you want to save this Network ?")
 		if reply in ['y', 'n']:
 			if reply == 'y':
-				with open("saved_NN/" NN.name + ".pickle", 'wb') as f:
+				with open("saved_NN/" + NN.name + ".pickle", 'wb') as f:
 					pickle.dump(NN, f)
 			return NN
 
@@ -39,42 +39,36 @@ def lunch_neural(name, layers, datafile, cost=CrossEntropyCost, hidden_activatio
 
 def main(filename):
 	list_nn = []
-	cost_tuple = lunch_neural("1-mini-batch|Tanh" ,[29, 60, 40, 2], hidden_activation=Tanh,\
+	cost_tuple = lunch_neural("1-mini-batch|Tanh" ,[29, 30, 20, 2], hidden_activation=Tanh,\
 		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
 		epochs=10000, batch_size=30, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-			datafile=filename, dropout=0.5)
+			datafile=filename, dropout=0.4)
 	list_nn.append(cost_tuple)
 
-	cost_tuple = lunch_neural("2-5Layers|Tanh" ,[29, 80, 60, 40, 2], hidden_activation=Tanh,\
+	cost_tuple = lunch_neural("2-5Layers|Tanh" ,[29, 40, 30, 20, 2], hidden_activation=Tanh,\
 		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
 		epochs=10000, batch_size=30, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-			datafile=filename, dropout=0.5)
+			datafile=filename, dropout=0.4)
 	list_nn.append(cost_tuple)
 
 	reply = ask_function("Do you want to see the bonuses ?")
 	if reply == 'y':
-		cost_tuple = lunch_neural("3-Stochastic|Tanh" ,[29, 60, 40, 2], hidden_activation=Tanh,\
+		cost_tuple = lunch_neural("3-Stochastic|Sigmoid" ,[29, 40, 30, 20, 2], hidden_activation=Sigmoid,\
 		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
 		epochs=10000, batch_size=1, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-		datafile= filename, dropout=0.5)
+		datafile= filename, dropout=0.4)
 		list_nn.append(cost_tuple)
 
-		cost_tuple = lunch_neural("4-Stochastic|Sigmoid" ,[29, 80, 60, 40, 2], hidden_activation=Sigmoid,\
-		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
-		epochs=10000, batch_size=1, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-		datafile= filename, dropout=0.5)
-		list_nn.append(cost_tuple)
-
-		cost_tuple = lunch_neural("5-mini-batch|Sigmoid" ,[29, 60, 40, 2], hidden_activation=Sigmoid,\
+		cost_tuple = lunch_neural("4-mini-batch|Sigmoid" ,[29, 30, 20, 2], hidden_activation=Sigmoid,\
 		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
 		epochs=10000, batch_size=32, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-		datafile= filename, dropout=0.5)
+		datafile= filename, dropout=0.4)
 		list_nn.append(cost_tuple)
 	
-		cost_tuple = lunch_neural("6-mini-batch|ReLU|he" ,[29, 8, 6, 4, 2], hidden_activation=ReLu,\
+		cost_tuple = lunch_neural("5-mini-batch|ReLU|he" ,[29, 40, 30, 20, 2], hidden_activation=ReLu,\
 		output_activation=Softmax, cost=CrossEntropyCost, w_init='he',\
 		epochs=10000, batch_size=32, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-		datafile=filename, dropout=0.5)
+		datafile=filename, dropout=0.4)
 		list_nn.append(cost_tuple)
 
 	# show_big_plot(list_nn)

@@ -230,16 +230,14 @@ class Network(object):
 					j, accuracy, test_size, train_cost, test_cost, self.learning_rate))
 				if self.n_epoch_early_stop > 0:
 					if test_cost < 0.07 and train_cost < 0.07 and np.absolute(test_cost - train_cost) < best_diff\
-							and test_cost < best_test_cost and train_cost < best_train_cost:
+							and test_cost < best_test_cost:
 						best_diff = np.absolute(test_cost - train_cost)
 						no_change_diff_cost = 0
 						self.saved_biases = self.biases
 						self.saved_weights = self.weights
 						best_test_cost = test_cost
-						best_train_cost = train_cost
-					elif (test_cost > 0.07 or train_cost > 0.07) and test_cost < best_test_cost and train_cost < best_train_cost:
+					elif (test_cost > 0.07 or train_cost > 0.07) and test_cost < best_test_cost:
 						best_test_cost = test_cost
-						best_train_cost = train_cost
 						self.saved_biases = self.biases
 						self.saved_weights = self.weights
 						no_change_diff_cost = 0
