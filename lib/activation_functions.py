@@ -41,8 +41,9 @@ class Tanh:
 class ReLu:
 	@staticmethod
 	def fct(x: np.ndarray) -> np.ndarray:
-		return np.maximum(- 0.01 * x, x)
+		return np.where(x < 0, np.exp(x) - 1, x)
+		# return np.maximum(- 0.01 * x, x)
 	
 	@staticmethod
 	def derivative(x):
-		return np.where(x < 0, -0.01, 1)
+		return np.where(x < 0, np.exp(x), 1)

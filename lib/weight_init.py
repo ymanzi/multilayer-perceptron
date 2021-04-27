@@ -7,8 +7,8 @@ class Weight_init:
 
 	@staticmethod
 	def xavier(layers):
-		return [np.random.randn(x, y) * np.sqrt(6/(y + x)) for x,y in zip(layers[1:], layers[:-1])]
+		return [np.random.randn(x, y) / np.sqrt(y + x) for x,y in zip(layers[1:], layers[:-1])]
 
 	@staticmethod
 	def he(layers):
-		return [np.random.randn(x, y) / np.sqrt((y + x) / 2) / 10 for x,y in zip(layers[1:], layers[:-1])]
+		return [np.random.randn(x, y) / np.sqrt((y + x) / 2) for x,y in zip(layers[1:], layers[:-1])]

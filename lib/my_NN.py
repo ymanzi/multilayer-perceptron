@@ -36,7 +36,7 @@ def ask_function(question):
 
 class Network(object):
 	def __init__(self, name, layers, cost=CrossEntropyCost, hidden_activation=Sigmoid, output_activation=Sigmoid, w_init='std',\
-			epochs=1000, batch_size=32, learning_rate = 1.0, lambda_=0.0, n_epoch_early_stop = 0, momentum=0.0):
+			epochs=1000, batch_size=32, learning_rate = 1.0, lambda_=0.0, n_epoch_early_stop = 0, momentum=0.0, dropout=1.0):
 		''' 
 			Exemple of layers: [2, 3, 1] 
 			if we want to create a Network object with 
@@ -61,7 +61,8 @@ class Network(object):
 			self.weights = Weight_init.xavier(layers)
 		elif w_init == 'he':
 			self.weights = Weight_init.he(layers)
-		self.biases = [np.random.randn(x, 1)/10 for x in layers[1:]]
+		# self.biases = [np.random.randn(x, 1) for x in layers[1:]]
+		self.biases = [np.zeros((x, 1)) for x in layers[1:]]
 		self.cost = cost
 		self.list_train_cost = [[],[]]
 		self.list_test_cost = [[],[]]
@@ -77,6 +78,7 @@ class Network(object):
 		self.old_nabla_w = [np.zeros(w.shape) for w in self.weights]
 		self.old_nabla_b = [np.zeros(b.shape) for b in self.biases]
 		self.momentum_ = momentum
+		self.dropout = dropout
 
 	def lunch_test(self, train_data, test_data, val_data):
 		def init_(question ,dataset):
@@ -147,16 +149,27 @@ class Network(object):
 		nabla_w = [np.zeros(w.shape) for w in self.weights]
 		nabla_b = [np.zeros(b.shape) for b in self.biases]
 
+		#dropoutConnect
+		dropWeights = [np.random.binomial(1, self.dropout, size=w.shape)/self.dropout for w in self.weights[:-1]]
+		dropWeights = [w * d for w,d in zip(self.weights[:-1], dropWeights)]
+		dropWeights.append(self.weights[-1])
+
+		dropBiases = [np.random.binomial(1, 1.0, size=b.shape)/self.dropout for b in self.biases[:-1]]
+		dropBiases = [b * d for b,d in zip(self.biases[:-1], dropBiases)]
+		dropBiases.append(self.biases[-1])
+
 		#feedforward
 		list_activation = [x]
 		list_z = []
 		a = x
-		for weight, bias in zip(self.weights[:-1], self.biases[:-1]):
+		# for weight, bias in zip(self.weights[:-1], self.biases[:-1]):
+		for weight, bias in zip(dropWeights, dropBiases[:-1]):
 			z = np.add(np.dot(weight, a), bias)
 			a = self.hidden_a.fct(z)
 			list_activation.append(a)
 			list_z.append(z)
-		z = np.add(np.dot(self.weights[-1], a), self.biases[-1])
+		# z = np.add(np.dot(self.weights[-1] , a), self.biases[-1])
+		z = np.add(np.dot(dropWeights[-1] , a), dropBiases[-1])
 		a = self.output_a.fct(z)
 		list_activation.append(a)
 		list_z.append(z)
@@ -166,7 +179,8 @@ class Network(object):
 		nabla_w[-1] = np.dot(delta, list_activation[-2].transpose())
 		for l in range(2, self.nb_layers):
 			z = list_z[-l]
-			delta = np.dot(self.weights[-l + 1].transpose(), delta) * self.hidden_a.derivative(z)
+			# delta = np.dot(self.weights[-l + 1].transpose(), delta) * self.hidden_a.derivative(z)
+			delta = np.dot(dropWeights[-l + 1].transpose(), delta) * self.hidden_a.derivative(z)
 			nabla_b[-l] = delta
 			nabla_w[-l] = np.dot(delta, list_activation[-l -1].transpose())
 		return (nabla_w, nabla_b)
@@ -189,7 +203,9 @@ class Network(object):
 		prev_test_cost = 0
 
 		diff_cost = -1
+		best_diff = 1
 		no_change_diff_cost = 0
+		no_change = 0
 
 		training_data = list(training_data)
 		training_size = len(training_data)
@@ -197,10 +213,11 @@ class Network(object):
 			test_data = list(test_data)
 			test_size = len(test_data)
 		for j in range(self.epochs):
-			random.shuffle(training_data)
+			np.random.shuffle(training_data)
 			for n in range(0, training_size, self.batch_size):
-				
-				self.update_minibatch(training_data[0: 0 + self.batch_size], self.learning_rate, self.lambda_, training_size)
+				if self.batch_size == 1:
+					np.random.shuffle(training_data)
+				self.update_minibatch(training_data[n: n + self.batch_size], self.learning_rate, self.lambda_, training_size)
 			if test_data:
 				accuracy = self.evaluate(test_data)
 				test_cost = self.get_cost(test_data)
@@ -211,13 +228,26 @@ class Network(object):
 				print("Epoch {}: {} / {} Training Cost: {}  Test Cost: {}  learning_rate: {}".format(
 					j, accuracy, test_size, train_cost, test_cost, self.learning_rate))
 				if self.n_epoch_early_stop > 0:
-					if  (np.absolute(prev_test_cost - test_cost) >= np.absolute(prev_train_cost - train_cost) and test_cost < best_test_cost) or \
-						(prev_test_cost - test_cost > 0 and prev_train_cost - train_cost > 0 and test_cost < best_test_cost):
+					if test_cost < 0.07 and train_cost < 0.07 and np.absolute(test_cost - train_cost) < best_diff and test_cost < best_test_cost:
+						best_diff = np.absolute(test_cost - train_cost)
 						no_change_diff_cost = 0
 						self.saved_biases = self.biases
 						self.saved_weights = self.weights
 						best_test_cost = test_cost
-						print("OUI")
+						print("OUI-OUI")
+					elif (test_cost > 0.07 or train_cost > 0.07) and test_cost < best_test_cost:
+						best_test_cost = test_cost
+						self.saved_biases = self.biases
+						self.saved_weights = self.weights
+						no_change_diff_cost = 0
+						print("LOL")
+					# elif  (np.absolute(prev_test_cost - test_cost) >= np.absolute(prev_train_cost - train_cost) and test_cost < best_test_cost) or \
+					# 	(prev_test_cost - test_cost > 0 and prev_train_cost - train_cost > 0 and test_cost < best_test_cost):
+					# 	no_change_diff_cost = 0
+					# 	self.saved_biases = self.biases
+					# 	self.saved_weights = self.weights
+					# 	best_test_cost = test_cost
+						
 					else:
 						no_change_diff_cost += 1
 					prev_test_cost = test_cost
@@ -242,6 +272,7 @@ class Network(object):
 				self.list_train_cost[0] = tmp_train
 			self.draw_plot()
 			self.lunch_test(training_data, test_data, validation_data)
+# ICIIIIIIII		
 		return [self.list_train_cost, self.list_test_cost]
 
 	

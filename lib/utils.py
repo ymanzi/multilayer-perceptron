@@ -19,7 +19,10 @@ def data_spliter(x: np.ndarray, y: np.ndarray, proportion: float):
         print("x.shape: ", x.shape, " y.shape: ", y.shape )
         return None
     random_zip = list(zip(x.tolist(), y))
-    shuffle(random_zip)
+    np.random.shuffle(random_zip)
+    np.random.shuffle(random_zip)
+    np.random.shuffle(random_zip)
+    np.random.shuffle(random_zip)
     new_x = []
     new_y = []
     for e1, e2 in random_zip:

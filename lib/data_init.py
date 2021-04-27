@@ -5,20 +5,20 @@ from lib.utils import *
 def split_data(filename):
 	df = pd.read_csv(filename, header=None).dropna().drop_duplicates()
 	y = df[1].replace(['B', 'M'], [0, 1])
-	x = df.drop(columns = [1, 2]) #2 4
+	x = df.drop(columns = [1, 4, 5]) #2 4
 	data = data_spliter(x.values, y.values.reshape(-1, 1), 0.5) # , np.array(y_train).reshape(-1, 1), 0.6)
 	pd.DataFrame(data[0]).to_csv("resources/x_train.csv", header = None, index=False)
 	pd.DataFrame(data[1]).to_csv("resources/y_train.csv", header = None, index=False)
 	pd.DataFrame(data[2]).to_csv("resources/x_test.csv", header = None, index=False)
 	pd.DataFrame(data[3]).to_csv("resources/y_test.csv", header=None, index=False)
 
-def init_project_data(filename):
+def init_project_train(filename):
 	''' Initialize the lists data_train and data_test for the project from a given file'''
 	
 	df = pd.read_csv(filename, header=None).dropna().drop_duplicates()
 	y = df[1].replace(['B', 'M'], [0, 1])
-	x = df.drop(columns = [1, 4, 5]) #2 4
-	data = data_spliter(x.values, y.values.reshape(-1, 1), 0.8) # , np.array(y_train).reshape(-1, 1), 0.6)
+	x = df.drop(columns = [1, 4, 5]) #4 5
+	data = data_spliter(x.values, y.values.reshape(-1, 1), 0.9) # , np.array(y_train).reshape(-1, 1), 0.6)
 	
 	x_train = init_array(data[0], 'x')
 	y_train = init_array(data[1], 'y')
@@ -28,6 +28,20 @@ def init_project_data(filename):
 	data_train = list(zip(x_train, y_train))
 	data_test = list(zip(x_test, y_test))
 	return data_train, data_test
+
+
+def init_project_predict(filename):
+	''' Initialize the lists data_train and data_test for the project from a given file'''
+	
+	df = pd.read_csv(filename, header=None).dropna().drop_duplicates()
+	y = df[1].replace(['B', 'M'], [0, 1]).values.reshape(-1, 1)
+	x = df.drop(columns = [1, 4, 5]).values #2 4
+	
+	x_train = init_array(x, 'x')
+	y_train = init_array(y, 'y')
+	
+	data_train = list(zip(x_train, y_train))
+	return data_train
 
 
 def split_validation(file_x, file_y):

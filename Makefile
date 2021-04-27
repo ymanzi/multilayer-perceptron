@@ -22,23 +22,23 @@ env:
 	pip install pandas
 	pip install matplotlib
 
+corr:
+	python3 correction/evaluation.py correction/data.csv
+
 clean:
-	rm -f __pycache__ houses.csv theta.csv
+	rm -f *CE.pickle data.csv data_*.csv
 
 describe:
-	python3.8 describe.py resources/dataset_train.csv
+	python3.8 describe.py srcs/data.csv
+
+show:
+	python3.8 scatter_plot.py srcs/data.csv
 
 predict:
-	python3.8 logreg_predict.py resources/dataset_test.csv theta.csv
+	python3 predict.py 1-mini-batch\|Tanh\|Xavier\|CE.pickle data_test.csv
+	python3 predict.py 2-Stochastic\|Sigmoid\|xavier\|CE.pickle data_test.csv
+	python3 predict.py 3-mini-batch\|Sigmoid\|xavier\|CE.pickle data_test.csv
+	python3 predict.py 4-mini-batch\|ReLU\|he\|CE.pickle data_test.csv
 
 train:
-	python3.8 logreg_train.py resources/dataset_train.csv # batch
-
-histo:
-	python3.8 histogram.py resources/dataset_train.csv
-
-pair:
-	python3.8 pair_plot.py resources/dataset_train.csv
-
-scatter:
-	python3.8 scatter_plot.py resources/dataset_train.csv
+	python3.8 train.py data_training.csv

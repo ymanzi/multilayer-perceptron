@@ -3,6 +3,7 @@ import pandas as pd
 from lib.utils import *
 from lib.my_NN import *
 from lib.data_init import *
+from random import *
 
 #del 3 21
 
@@ -13,8 +14,13 @@ from lib.data_init import *
 
 
 
-p = np.array([[1,-1, -1], [3,-3, 3], [2,-2, 2]])
-print(np.sum(p))
+p = np.array([[[1,-1, -1], [3,-3, 3], [2,-2, 2]], [[1,-1, -1], [3,-3, 3], [2,-2, 2]]])
+m = np.random.binomial(1, 0.5, size = p.shape) 
+print(m)
+print(p)
+print(p*m)
+
+# print(np.sum(p))
 # e = np.array([[-5,-5], [3,0], [2,0]])
 
 

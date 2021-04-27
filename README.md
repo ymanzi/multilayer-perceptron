@@ -8,3 +8,9 @@ https://towardsdatascience.com/derivative-of-the-sigmoid-function-536880cf918e
 
 https://machinelearningmastery.com/weight-initialization-for-deep-learning-neural-networks/
 
+https://machinelearningmastery.com/dropout-for-regularizing-deep-neural-networks/
+
+https://stats.stackexchange.com/questions/201569/what-is-the-difference-between-dropout-and-drop-connect
+
+
+
