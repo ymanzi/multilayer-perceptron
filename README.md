@@ -1,6 +1,6 @@
 # Multilayer Perceptron
 
-**Subject**: [Multilayer Perceptron 42](https://cdn.intra.42.fr/pdf/pdf/13338/en.subject.pdf)
+**Subject**: [Multilayer Perceptron 42](https://github.com/ymanzi/multilayer-perceptron/blob/main/srcs/en.subject.pdf)
 
 **Member**: :last_quarter_moon_with_face: [Ymanzi](https://github.com/ymanzi) :first_quarter_moon_with_face:
 
