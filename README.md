@@ -13,5 +13,9 @@ https://machinelearningmastery.com/dropout-for-regularizing-deep-neural-networks
 
 https://stats.stackexchange.com/questions/201569/what-is-the-difference-between-dropout-and-drop-connect
 
+https://www.machinecurve.com/index.php/2019/09/16/he-xavier-initialization-activation-functions-choose-wisely/
+
+
+https://www.quora.com/What-is-an-intuitive-explanation-of-momentum-in-training-neural-networks
 
 
