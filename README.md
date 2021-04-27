@@ -1,5 +1,6 @@
 # multilayer-perceptron
 
+
 https://medium.com/@omkar.nallagoni/activation-functions-with-derivative-and-python-code-sigmoid-vs-tanh-vs-relu-44d23915c1f4
 
 http://neuralnetworksanddeeplearning.com/chap2.html

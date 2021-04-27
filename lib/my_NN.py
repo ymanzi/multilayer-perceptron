@@ -199,6 +199,7 @@ class Network(object):
 		best_accuracy = 1
 		no_change_best_accuracy = 0
 		best_test_cost = 1
+		best_train_cost = 1
 		prev_train_cost = 0
 		prev_test_cost = 0
 
@@ -225,29 +226,23 @@ class Network(object):
 				self.list_test_cost[0].append(test_cost)
 				self.list_train_cost[0].append(train_cost)
 				
-				print("Epoch {}: {} / {} Training Cost: {}  Test Cost: {}  learning_rate: {}".format(
+				print("Epoch {}: {} / {} -> Cost: {}  Test Cost: {}  learning_rate: {}".format(
 					j, accuracy, test_size, train_cost, test_cost, self.learning_rate))
 				if self.n_epoch_early_stop > 0:
-					if test_cost < 0.07 and train_cost < 0.07 and np.absolute(test_cost - train_cost) < best_diff and test_cost < best_test_cost:
+					if test_cost < 0.07 and train_cost < 0.07 and np.absolute(test_cost - train_cost) < best_diff\
+							and test_cost < best_test_cost and train_cost < best_train_cost:
 						best_diff = np.absolute(test_cost - train_cost)
 						no_change_diff_cost = 0
 						self.saved_biases = self.biases
 						self.saved_weights = self.weights
 						best_test_cost = test_cost
-						print("OUI-OUI")
-					elif (test_cost > 0.07 or train_cost > 0.07) and test_cost < best_test_cost:
+						best_train_cost = train_cost
+					elif (test_cost > 0.07 or train_cost > 0.07) and test_cost < best_test_cost and train_cost < best_train_cost:
 						best_test_cost = test_cost
+						best_train_cost = train_cost
 						self.saved_biases = self.biases
 						self.saved_weights = self.weights
 						no_change_diff_cost = 0
-						print("LOL")
-					# elif  (np.absolute(prev_test_cost - test_cost) >= np.absolute(prev_train_cost - train_cost) and test_cost < best_test_cost) or \
-					# 	(prev_test_cost - test_cost > 0 and prev_train_cost - train_cost > 0 and test_cost < best_test_cost):
-					# 	no_change_diff_cost = 0
-					# 	self.saved_biases = self.biases
-					# 	self.saved_weights = self.weights
-					# 	best_test_cost = test_cost
-						
 					else:
 						no_change_diff_cost += 1
 					prev_test_cost = test_cost
@@ -272,8 +267,6 @@ class Network(object):
 				self.list_train_cost[0] = tmp_train
 			self.draw_plot()
 			self.lunch_test(training_data, test_data, validation_data)
-# ICIIIIIIII		
-		return [self.list_train_cost, self.list_test_cost]
 
 	
 	def update_minibatch(self, batch, learning_rate, lambda_, n):
