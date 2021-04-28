@@ -216,8 +216,7 @@ class Network(object):
 		for j in range(self.epochs):
 			np.random.shuffle(training_data)
 			for n in range(0, training_size, self.batch_size):
-				if self.batch_size == 1:
-					np.random.shuffle(training_data)
+				# np.random.shuffle(training_data)
 				self.update_minibatch(training_data[n: n + self.batch_size], self.learning_rate, self.lambda_, training_size)
 			if test_data:
 				accuracy = self.evaluate(test_data)
