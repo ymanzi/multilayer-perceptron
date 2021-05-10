@@ -1,7 +1,7 @@
 import numpy as np
 
 def mean_(x):
-	length = x.size
+	length = x.shape[0]
 	if length == 0:
 		return None
 	return float(np.sum(x) / length)
@@ -41,3 +41,6 @@ def std_(x):
 		return None
 	mean = float(np.sum(x) / length)
 	return np.sqrt(np.sum(np.power(np.subtract(x, mean), 2)) / length)
+
+def skew_(x):
+	return 3 * (mean_(x) - median_(x)) / std_(x)

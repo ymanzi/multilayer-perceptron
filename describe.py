@@ -5,9 +5,9 @@ from lib.TinyStatistician import *
 
 def get_stat(df):
     list_columns = df.columns
-    list_rows = ['Count', 'Mean','Var', 'Std','Min','25%', 'Median' ,'50%','75%','Max']
-    list_data = []
-    for col in list_columns:
+    list_rows = ['Count', 'Mean','Var', 'Std','Min','25%', 'Median' ,'50%','75%','Max', 'Skew']
+    for i, col in enumerate(list_columns):
+        list_data = []
         data = df[col].values
         list_data.append(np.array([df[col].size \
             ,  mean_(data)\
@@ -18,8 +18,9 @@ def get_stat(df):
             , median_(data)\
             , quartiles_(data, 50)\
             , quartiles_(data, 75)\
-            , max(data)]))
-    print(pd.DataFrame(np.array(list_data).transpose(), columns= list_columns, index = list_rows))
+            , max(data)\
+            , skew_(data)]))
+        print(pd.DataFrame(np.array(list_data).transpose(), columns= [i], index = list_rows))
 
 def init_data(filename):
     df = pd.read_csv(filename, header=None).drop_duplicates().dropna()

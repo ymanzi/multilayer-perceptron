@@ -6,15 +6,10 @@ from lib.data_init import *
 import pickle
 import sys
 
-
-# x_val = init_array("resources/x_validation.csv", 'x')
-# y_val = init_array("resources/y_validation.csv", 'y')
-
-
 def main(data_predict, network):
 	with open(network, 'rb') as f:
 		NN = pickle.load(f)
-	NN.lunch_test(None, None, data_predict)
+	NN.predict_test(data_predict)
 
 
 if __name__ == "__main__":

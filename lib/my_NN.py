@@ -3,26 +3,11 @@ import random
 import matplotlib.pyplot as plt
 from lib.data_init import init_array
 from lib.metrics import *
+from lib.TinyStatistician import *
 from lib.activation_functions import *
 from lib.cost_functions import *
 from lib.weight_init import *
-
-
-		# return 1 * ReLu.fct(x)
-		# return np.maximum(0.01, ReLu.fct(x))
-
-# def sigmoid(x: np.ndarray) -> np.ndarray:
-# 	if x.size == 0:
-# 		return None
-# 	x = x.astype(float)
-# 	if x.ndim == 0:
-# 		x = np.array(x, ndmin=1)
-# 	return (1.0 / (1.0 + (np.exp(-x))))
-
-# def sigmoid_derivative(x):
-# 	sig = sigmoid(x)
-# 	return sig * (1.0 - sig)
-
+import sys
 
 def ask_function(question):
 	reply = "lol"
@@ -61,14 +46,15 @@ class Network(object):
 			self.weights = Weight_init.xavier(layers)
 		elif w_init == 'he':
 			self.weights = Weight_init.he(layers)
-		# self.biases = [np.random.randn(x, 1) for x in layers[1:]]
 		self.biases = [np.zeros((x, 1)) for x in layers[1:]]
 		self.cost = cost
+		self.val_cost = 0
 		self.list_train_cost = [[],[]]
 		self.list_test_cost = [[],[]]
 		self.output_a = output_activation
 		self.hidden_a = hidden_activation
 		self.epochs = epochs
+		self.training_msg = []
 		self.batch_size = batch_size
 		self.learning_rate = learning_rate
 		self.lambda_ = lambda_
@@ -80,33 +66,54 @@ class Network(object):
 		self.momentum_ = momentum
 		self.dropout = dropout
 
-	def lunch_test(self, train_data, test_data, val_data):
-		def init_(question ,dataset):
-			reply = ask_function(question)
-			if reply == 'y':
-				print("------------------------------------------------------")
-				print("                       DATA METRICS                   ")
-				print("------------------------------------------------------")
-				print("Cross Entropy Cost: {}".format(self.get_cost(dataset)))
-				tuple_a_y = list(zip(*[(np.argmax(self.feedforward(x)), np.argmax(y))
-						for (x, y) in dataset]))
-				predicted = np.array(tuple_a_y[0])
-				expected = np.array(tuple_a_y[1])
-				print("Accuracy: ", accuracy_score_(predicted, expected))
-				print("Precision (check False Positive): ", precision_score_(predicted, expected, 1))
-				print("Recall Score (check False Negative): ", recall_score_(predicted, expected, 1))
-				print("F1 Score (Both FP and FN): ", f1_score_(predicted, expected, 1))
-				print("\nConfusion Matrix:")
-				confusion_matrix(predicted, expected, 1)
+	# def lunch_test(self, train_data, test_data, val_data):
+	# 	def init_(question ,dataset):
+	# 		reply = ask_function(question)
+	# 		if reply == 'y':
+	# 			print(" ------------------------------------------------------")
+	# 			print("|                       TRAIN METRICS                  |")
+	# 			print(" ------------------------------------------------------")
+	# 			print("Cross Entropy Cost: {}".format(self.get_cost(dataset)))
+	# 			tuple_a_y = list(zip(*[(np.argmax(self.feedforward(x)), np.argmax(y))
+	# 					for (x, y) in dataset]))
+	# 			predicted = np.array(tuple_a_y[0])
+	# 			expected = np.array(tuple_a_y[1])
+	# 			print("Accuracy: ", accuracy_score_(predicted, expected))
+	# 			print("Precision (check False Positive): ", precision_score_(predicted, expected, 1))
+	# 			print("Recall Score (check False Negative): ", recall_score_(predicted, expected, 1))
+	# 			print("F1 Score (Both FP and FN): ", f1_score_(predicted, expected, 1))
+	# 			print("\nConfusion Matrix:")
+	# 			confusion_matrix(predicted, expected, 1)
 
-		if train_data:
-			init_("Do you want to test on the train_data ?", train_data)
-		if test_data:
-			init_("Do you want to test on the test_data ?", test_data)
-		if val_data:
-			val_data = list(val_data)
-			init_("Do you want to test on the validation_data ?", val_data)
+	# 	if train_data:
+	# 		init_("Do you want to test on the train_data ?", train_data)
+	# 	if test_data:
+	# 		init_("Do you want to test on the test_data ?", test_data)
+	# 	if val_data:
+	# 		val_data = list(val_data)
+	# 		init_("Do you want to test on the validation_data ?", val_data)
 
+	def predict_test(self, val_data):
+		dataset = list(val_data)
+		print(" ------------------------------------------------------")
+		print("|                    PREDICT METRICS                   |")
+		print(" ------------------------------------------------------")
+		print("Cross Entropy Cost: {}".format(self.val_cost))
+		tuple_a_y = list(zip(*[(np.argmax(self.feedforward(x)), np.argmax(y))
+				for (x, y) in dataset]))
+		predicted = np.array(tuple_a_y[0])
+		expected = np.array(tuple_a_y[1])
+		print("Accuracy: ", accuracy_score_(predicted, expected))
+		print("Precision (check False Positive): ", precision_score_(predicted, expected, 1))
+		print("Recall Score (check False Negative): ", recall_score_(predicted, expected, 1))
+		print("F1 Score (Both FP and FN): ", f1_score_(predicted, expected, 1))
+		print("\nConfusion Matrix:")
+		confusion_matrix(predicted, expected, 1)
+		reply = ask_function("Do you want to see to training process ?")
+		print("------------------------------------------------------")
+		if reply == 'y':
+			for msg in self.training_msg:
+				print(msg)
 
 	def draw_plot(self):
 		reply = ask_function("Do you want to see the graph ?")
@@ -150,11 +157,12 @@ class Network(object):
 		nabla_b = [np.zeros(b.shape) for b in self.biases]
 
 		#dropoutConnect
-		dropWeights = [np.random.binomial(1, self.dropout, size=w.shape)/self.dropout for w in self.weights[:-1]]
-		dropWeights = [w * d for w,d in zip(self.weights[:-1], dropWeights)]
+		dropWeights = [np.random.binomial(1, self.dropout, size=w.shape)/self.dropout for w in self.weights[1:-1]]
+		dropWeights = [w * d for w,d in zip(self.weights[1:-1], dropWeights)]
 		dropWeights.append(self.weights[-1])
+		dropWeights.insert(0, self.weights[0])
 
-		dropBiases = [np.random.binomial(1, 1.0, size=b.shape)/self.dropout for b in self.biases[:-1]]
+		dropBiases = [np.random.binomial(1, 1.0, size=b.shape) for b in self.biases[:-1]]
 		dropBiases = [b * d for b,d in zip(self.biases[:-1], dropBiases)]
 		dropBiases.append(self.biases[-1])
 
@@ -163,7 +171,7 @@ class Network(object):
 		list_z = []
 		a = x
 		# for weight, bias in zip(self.weights[:-1], self.biases[:-1]):
-		for weight, bias in zip(dropWeights, dropBiases[:-1]):
+		for weight, bias in zip(dropWeights[:-1], dropBiases[:-1]):
 			z = np.add(np.dot(weight, a), bias)
 			a = self.hidden_a.fct(z)
 			list_activation.append(a)
@@ -216,7 +224,6 @@ class Network(object):
 		for j in range(self.epochs):
 			np.random.shuffle(training_data)
 			for n in range(0, training_size, self.batch_size):
-				# np.random.shuffle(training_data)
 				self.update_minibatch(training_data[n: n + self.batch_size], self.learning_rate, self.lambda_, training_size)
 			if test_data:
 				accuracy = self.evaluate(test_data)
@@ -225,32 +232,38 @@ class Network(object):
 				self.list_test_cost[0].append(test_cost)
 				self.list_train_cost[0].append(train_cost)
 				
-				print("Epoch {}: {} / {} -> Cost: {}  Test Cost: {}  learning_rate: {}".format(
-					j, accuracy, test_size, train_cost, test_cost, self.learning_rate))
+
+				msg = "Epoch {:5} ->  Loss:{:10.10f} Acc: {:2.5f} - Val Loss:{:10.10f} Val Acc:{:2.5f}".format(
+					j, train_cost, self.evaluate(training_data)/training_size, test_cost, self.evaluate(test_data)/test_size )
+				self.training_msg.append(msg)
+				if j == 0:
+					size_msg = 0
+				else:
+					size_msg = len(msg)
+				sys.stdout.write("\b" * size_msg + msg)
+				sys.stdout.flush()
+
 				if self.n_epoch_early_stop > 0:
-					if test_cost < 0.07 and train_cost < 0.07 and np.absolute(test_cost - train_cost) < best_diff\
-							and test_cost < best_test_cost:
-						best_diff = np.absolute(test_cost - train_cost)
+					if test_cost < best_test_cost:
 						no_change_diff_cost = 0
+						best_test_cost = test_cost
+						self.val_cost = mean_(np.array([train_cost, test_cost]))
 						self.saved_biases = self.biases
 						self.saved_weights = self.weights
-						best_test_cost = test_cost
-					elif (test_cost > 0.07 or train_cost > 0.07) and test_cost < best_test_cost:
-						best_test_cost = test_cost
-						self.saved_biases = self.biases
-						self.saved_weights = self.weights
-						no_change_diff_cost = 0
 					else:
 						no_change_diff_cost += 1
+
 					prev_test_cost = test_cost
 					prev_train_cost = train_cost
 					if no_change_diff_cost == self.n_epoch_early_stop:
-						print("Early stop activated")
+						print("\nEarly stop activated - Back to Epoch", j - self.n_epoch_early_stop)
+						print(self.training_msg[j - self.n_epoch_early_stop])
 						self.weights = self.saved_weights
 						self.biases = self.saved_biases
 						break
-			else:
-				print("Epoch {0} complete".format(j))
+				else:
+					print("Epoch {0} complete".format(j))
+		
 		if test_data:
 			tmp_test = list(enumerate(self.list_test_cost[0]))
 			tmp_train = list(enumerate(self.list_train_cost[0]))
@@ -263,7 +276,7 @@ class Network(object):
 				self.list_test_cost[0] = tmp_test
 				self.list_train_cost[0] = tmp_train
 			self.draw_plot()
-			self.lunch_test(training_data, test_data, validation_data)
+			# self.lunch_test(training_data, test_data, validation_data)
 
 	
 	def update_minibatch(self, batch, learning_rate, lambda_, n):
@@ -275,7 +288,6 @@ class Network(object):
 			``lambda_`` is the L2 regularization parameter who reduce overfitting,
 			and ``n`` is the total size of the training data set.
 		"""
-
 		nabla_w = [np.zeros(w.shape) for w in self.weights]
 		nabla_b = [np.zeros(b.shape) for b in self.biases]
 
@@ -310,7 +322,3 @@ class Network(object):
 		y = np.array(tuple_a_y[1])
 
 		return self.cost.value(a , y, self.weights, self.lambda_)
-
-# nn = Network([3, 2, 1])
-# print(nn.feedforward(np.random.randn(3, 1)), "\n\n")
-# print(nn.weights)

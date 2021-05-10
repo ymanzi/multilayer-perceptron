@@ -15,7 +15,6 @@ def save_function(question):
 			print("The only accepted replies are 'y','n','r'. ")
 	return reply
 
-
 def show_big_plot(list_nn):
 	for nn in list_nn:
 		train0 = list(zip(*nn.list_train_cost[0]))
@@ -33,9 +32,6 @@ def show_big_plot(list_nn):
 	plt.legend()
 	plt.show()
 	
-
-	
-
 
 def lunch_neural(name, layers, datafile, cost=CrossEntropyCost, hidden_activation=Sigmoid, \
 	output_activation=Sigmoid, w_init='std', epochs=1000, batch_size=32, \
@@ -55,39 +51,26 @@ def lunch_neural(name, layers, datafile, cost=CrossEntropyCost, hidden_activatio
 					pickle.dump(NN, f)
 			return NN
 
-
 def main(filename):
 	list_nn = []
-	nn = lunch_neural("1-mini-batch|Tanh" ,[29, 90, 50, 2], hidden_activation=Tanh,\
+	nn = lunch_neural("1-mini-batch|Tanh" ,[27, 8, 6, 2], hidden_activation=Tanh,\
 		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
 		epochs=10000, batch_size=32, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
 			datafile=filename, dropout=0.5)
 	list_nn.append(nn)
 
-	nn = lunch_neural("2-5Layers|Tanh" ,[29, 60, 40, 2], hidden_activation=Tanh,\
-		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
-		epochs=10000, batch_size=32, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-			datafile=filename, dropout=0.8)
-	list_nn.append(nn)
-
 	reply = ask_function("Do you want to see the bonuses ?")
 	if reply == 'y':
-		nn = lunch_neural("3-Stochastic|Sigmoid" ,[29, 8, 6, 2], hidden_activation=Sigmoid,\
+		nn = lunch_neural("2-mini-batch|Sigmoid" ,[27, 8, 6, 2], hidden_activation=Sigmoid,\
 		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
-		epochs=10000, batch_size=32, learning_rate=0.03, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-		datafile= filename, dropout=0.8)
-		list_nn.append(nn)
-
-		nn = lunch_neural("4-mini-batch|Sigmoid" ,[29, 15, 10, 2], hidden_activation=Sigmoid,\
-		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
-		epochs=10000, batch_size=32, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
+		epochs=10000, batch_size=100, learning_rate=0.03, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
 		datafile= filename, dropout=0.5)
 		list_nn.append(nn)
-	
-		nn = lunch_neural("5-mini-batch|ReLU|he" ,[29, 8, 6, 2], hidden_activation=ReLu,\
+
+		nn = lunch_neural("3-mini-batch|ReLU|he" ,[27, 4, 3, 2], hidden_activation=ReLu,\
 		output_activation=Softmax, cost=CrossEntropyCost, w_init='he',\
 		epochs=10000, batch_size=32, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-		datafile=filename, dropout=0.8)
+		datafile=filename, dropout=1.0)
 		list_nn.append(nn)
 	show_big_plot(list_nn)
 
@@ -100,4 +83,3 @@ if __name__ == "__main__":
 		else:
 			filename = sys.argv[1]
 		main(filename)
-

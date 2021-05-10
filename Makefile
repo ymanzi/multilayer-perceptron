@@ -36,11 +36,9 @@ show:
 
 predict:
 	python3 predict.py "saved_NN/1-mini-batch|Tanh.pickle" data_test.csv
-	python3 predict.py "saved_NN/2-5Layers|Tanh.pickle" data_test.csv
-	python3 predict.py "saved_NN/3-Stochastic|Sigmoid.pickle" data_test.csv
-	python3 predict.py "saved_NN/4-mini-batch|Sigmoid.pickle" data_test.csv
-	python3 predict.py "saved_NN/5-mini-batch|ReLU|he.pickle" data_test.csv
+	python3 predict.py "saved_NN/2-mini-batch|Sigmoid.pickle" data_test.csv
+	python3 predict.py "saved_NN/3-mini-batch|ReLU|he.pickle" data_test.csv
 
 train:
-	make corr
+	# make corr
 	python3.8 train.py data_training.csv
