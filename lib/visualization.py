@@ -16,6 +16,45 @@ def draw_plot(list_values):
 	plt.show()
 
 
+def box_plot_(data, cat_var, features):
+       for col in features:
+              melted_data = pd.melt(data,id_vars =cat_var ,value_vars =col)#['radius_mean', 'texture_mean'])
+              plt.figure(figsize = (15,10))
+              sns.boxplot(x = "variable", y = "value", hue=cat_var ,data= melted_data)
+              plt.title(col)
+              plt.show()
+
+def histogram_(data, cat_var, features):
+       for col in features:
+              m = plt.hist(data[data[cat_var] == "M"][col].values,bins=30,fc = (1,0,0,0.5),label = "Malignant")
+              b = plt.hist(data[data[cat_var] == "B"][col].values,bins=30,fc = (0,1,0,0.5),label = "Benign")
+              plt.legend()
+              plt.xlabel(col)
+              plt.ylabel("Frequency")
+              plt.title("Histogram of " + col + " for Benign and Malignant Tumors")
+              plt.show()
+
+def heatmap_(data, cat_var, features):
+       """ 
+       Pearson Correlation 
+       
+       Strength of the relationship between two variables
+       * Meaning of 1 is two variable are positively correlated with each other
+       * Meaning of zero is there is no correlation between variables 
+       * Meaning of -1 is two variables are negatively correlated with each other
+       """
+
+       if cat_var not in features:
+              features.insert(0, cat_var)
+
+       f,ax=plt.subplots(figsize = (15,10))
+       sns.heatmap(data[features].corr(),annot=True,linewidths=0.5,fmt = ".2f", ax=ax, cmap="YlGnBu")
+       plt.xticks(rotation=90)
+       plt.yticks(rotation=0)
+       plt.title('Correlation Map')
+       plt.savefig('graph.png')
+       plt.show()
+
 
 class Komparator:
 	def __init__(self, df: pd.DataFrame):
@@ -89,4 +128,3 @@ class Komparator:
 				axis[i % 3, i // 3].legend()
 		fig.suptitle("Histograms")
 		plt.show()
-

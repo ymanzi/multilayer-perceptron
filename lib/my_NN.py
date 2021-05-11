@@ -107,8 +107,6 @@ class Network(object):
 		print("Precision (check False Positive): ", precision_score_(predicted, expected, 1))
 		print("Recall Score (check False Negative): ", recall_score_(predicted, expected, 1))
 		print("F1 Score (Both FP and FN): ", f1_score_(predicted, expected, 1))
-		print("\nConfusion Matrix:")
-		confusion_matrix(predicted, expected, 1)
 		reply = ask_function("Do you want to see to training process ?")
 		print("------------------------------------------------------")
 		if reply == 'y':
@@ -204,17 +202,10 @@ class Network(object):
 		tracking progress, but slows things down substantially."""
 
 		#EarlyStop Initialize
-		best_accuracy = 1
-		no_change_best_accuracy = 0
 		best_test_cost = 1
-		best_train_cost = 1
 		prev_train_cost = 0
 		prev_test_cost = 0
-
-		diff_cost = -1
-		best_diff = 1
 		no_change_diff_cost = 0
-		no_change = 0
 
 		training_data = list(training_data)
 		training_size = len(training_data)
@@ -232,7 +223,6 @@ class Network(object):
 				self.list_test_cost[0].append(test_cost)
 				self.list_train_cost[0].append(train_cost)
 				
-
 				msg = "Epoch {:5} ->  Loss:{:10.10f} Acc: {:2.5f} - Val Loss:{:10.10f} Val Acc:{:2.5f}".format(
 					j, train_cost, self.evaluate(training_data)/training_size, test_cost, self.evaluate(test_data)/test_size )
 				self.training_msg.append(msg)
@@ -320,5 +310,4 @@ class Network(object):
 		tuple_a_y = list(zip(*[(x, y)	for (x, y) in tmp_res]))
 		a = np.array(tuple_a_y[0])
 		y = np.array(tuple_a_y[1])
-
 		return self.cost.value(a , y, self.weights, self.lambda_)

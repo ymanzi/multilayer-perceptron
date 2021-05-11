@@ -59,20 +59,20 @@ def main(filename):
 			datafile=filename, dropout=0.5)
 	list_nn.append(nn)
 
-	reply = ask_function("Do you want to see the bonuses ?")
-	if reply == 'y':
-		nn = lunch_neural("2-mini-batch|Sigmoid" ,[27, 8, 6, 2], hidden_activation=Sigmoid,\
-		output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
-		epochs=10000, batch_size=100, learning_rate=0.03, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-		datafile= filename, dropout=0.5)
-		list_nn.append(nn)
+	# reply = ask_function("Do you want to see the bonuses ?")
+	# if reply == 'y':
+	# 	nn = lunch_neural("2-mini-batch|Sigmoid" ,[27, 8, 6, 2], hidden_activation=Sigmoid,\
+	# 	output_activation=Softmax, cost=CrossEntropyCost, w_init='xavier',\
+	# 	epochs=10000, batch_size=32, learning_rate=0.05, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
+	# 	datafile= filename, dropout=0.5)
+	# 	list_nn.append(nn)
 
-		nn = lunch_neural("3-mini-batch|ReLU|he" ,[27, 4, 3, 2], hidden_activation=ReLu,\
-		output_activation=Softmax, cost=CrossEntropyCost, w_init='he',\
-		epochs=10000, batch_size=32, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
-		datafile=filename, dropout=1.0)
-		list_nn.append(nn)
-	show_big_plot(list_nn)
+	# 	nn = lunch_neural("3-mini-batch|ReLU|he" ,[27, 40, 30, 2], hidden_activation=ReLu,\
+	# 	output_activation=Softmax, cost=CrossEntropyCost, w_init='he',\
+	# 	epochs=10000, batch_size=32, learning_rate=0.01, lambda_=0.0, n_epoch_early_stop=50, momentum=0.9,\
+	# 	datafile=filename, dropout=1.0)
+	# 	list_nn.append(nn)
+	# show_big_plot(list_nn)
 
 if __name__ == "__main__":
 	if len(sys.argv) not in [1, 2]:
