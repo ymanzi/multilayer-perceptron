@@ -18,6 +18,16 @@ def ask_function(question):
 			print("The only accepted replies are 'y' or 'n'. ")
 	return reply
 
+class colors:
+	BLUE = "\033[94m"
+	GREEN = "\033[32m"
+	LGREEN = "\033[92m"
+	MAGENTA = "\033[35m"
+	YELLOW = "\033[33m"
+	CYAN = "\033[36m"
+	ENDC = "\033[0m"
+	FAIL = '\033[91m'
+
 
 class Network(object):
 	def __init__(self, name, layers, cost=CrossEntropyCost, hidden_activation=Sigmoid, output_activation=Sigmoid, w_init='std',\
@@ -95,10 +105,10 @@ class Network(object):
 
 	def predict_test(self, val_data):
 		dataset = list(val_data)
-		print(" ------------------------------------------------------")
+		print(colors.YELLOW,"------------------------------------------------------")
 		print("|                    PREDICT METRICS                   |")
-		print(" ------------------------------------------------------")
-		print("Cross Entropy Cost: {}".format(self.val_cost))
+		print(" ------------------------------------------------------", colors.ENDC)
+		print(colors.GREEN,"Cross Entropy Cost: ",  self.val_cost, colors.ENDC)
 		tuple_a_y = list(zip(*[(np.argmax(self.feedforward(x)), np.argmax(y))
 				for (x, y) in dataset]))
 		predicted = np.array(tuple_a_y[0])
@@ -214,6 +224,7 @@ class Network(object):
 			test_size = len(test_data)
 		for j in range(self.epochs):
 			np.random.shuffle(training_data)
+			# self.batch_size = training_size
 			for n in range(0, training_size, self.batch_size):
 				self.update_minibatch(training_data[n: n + self.batch_size], self.learning_rate, self.lambda_, training_size)
 			if test_data:
@@ -223,7 +234,7 @@ class Network(object):
 				self.list_test_cost[0].append(test_cost)
 				self.list_train_cost[0].append(train_cost)
 				
-				msg = "Epoch {:5} ->  Loss:{:10.10f} Acc: {:2.5f} - Val Loss:{:10.10f} Val Acc:{:2.5f}".format(
+				msg = "Epoch {:5} -> Loss:\033[92m{:5.5f}\033[0m Acc:\033[36m{:2.2f}\033[0m - Val Loss:\033[92m{:5.5f}\033[0m Val Acc:\033[36m{:2.2f}\033[0m".format(
 					j, train_cost, self.evaluate(training_data)/training_size, test_cost, self.evaluate(test_data)/test_size )
 				self.training_msg.append(msg)
 				if j == 0:
@@ -246,7 +257,7 @@ class Network(object):
 					prev_test_cost = test_cost
 					prev_train_cost = train_cost
 					if no_change_diff_cost == self.n_epoch_early_stop:
-						print("\nEarly stop activated - Back to Epoch", j - self.n_epoch_early_stop)
+						print(colors.MAGENTA,"\nEarly stop activated - Back to Epoch", j - self.n_epoch_early_stop, colors.ENDC)
 						print(self.training_msg[j - self.n_epoch_early_stop])
 						self.weights = self.saved_weights
 						self.biases = self.saved_biases

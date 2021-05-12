@@ -5,7 +5,9 @@ from lib.utils import *
 def split_data(filename):
 	df = pd.read_csv(filename, header=None).dropna().drop_duplicates()
 	y = df[1].replace(['B', 'M'], [0, 1])
-	x = df.drop(columns = [1, 4, 5]) #2 4
+	# x = df.drop(columns = [1, 4, 5]) 
+	x = df[[2,3,7,9,13,15,19,20,22,23,26,27,28,30]]
+
 	data = data_spliter(x.values, y.values.reshape(-1, 1), 0.5) # , np.array(y_train).reshape(-1, 1), 0.6)
 	pd.DataFrame(data[0]).to_csv("resources/x_train.csv", header = None, index=False)
 	pd.DataFrame(data[1]).to_csv("resources/y_train.csv", header = None, index=False)
@@ -17,8 +19,8 @@ def init_project_train(filename):
 	
 	df = pd.read_csv(filename, header=None).dropna().drop_duplicates()
 	y = df[1].replace(['B', 'M'], [0, 1])
-	x = df.drop(columns = [1, 4, 5, 24, 25]) #4 5
-	# x = df.drop(columns = [1, 4, 5]) #4 5
+	# x = df.drop(columns = [1, 4, 5, 24, 25]) #4 5
+	x = df[[2,3,7,9,13,15,19,20,22,23,26,27,28,30]]
 	data = data_spliter(x.values, y.values.reshape(-1, 1), 0.7) # , np.array(y_train).reshape(-1, 1), 0.6)
 	
 	x_train = init_array(data[0], 'x')
@@ -36,8 +38,8 @@ def init_project_predict(filename):
 	
 	df = pd.read_csv(filename, header=None).dropna().drop_duplicates()
 	y = df[1].replace(['B', 'M'], [0, 1]).values.reshape(-1, 1)
-	x = df.drop(columns = [1, 4, 5, 25, 24]).values #2 4
-	# x = df.drop(columns = [1, 4, 5]).values #2 4
+	# x = df.drop(columns = [1, 4, 5, 25, 24]).values #2 4
+	x = df[[2,3,7,9,13,15,19,20,22,23,26,27,28,30]].values #2 4
 	
 	x_train = init_array(x, 'x')
 	y_train = init_array(y, 'y')
@@ -70,6 +72,7 @@ def array_normalization(arr):
 	new_ = None
 	for i in range(arr.shape[1]):
 		arr[:,i] = zscore_normalization(arr[:,i])
+		# arr[:,i] = minmax_normalization(arr[:,i])
 	return arr
 
 def x_array_reshape(arr):
